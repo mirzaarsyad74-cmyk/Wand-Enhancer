@@ -248,12 +248,11 @@
                                                                            Foreground="{Binding TagColor}"/>
                                                             </Border>
                                                             <!-- Message -->
-                                                            <TextBox Text="{Binding CleanMessage}"
-                                                                     FontFamily="Consolas, Cascadia Mono, monospace"
-                                                                     FontSize="11.5" Foreground="#e2e8f0"
-                                                                     Background="Transparent" TextWrapping="Wrap"
-                                                                     BorderThickness="0" IsReadOnly="True"
-                                                                     Cursor="IBeam" Padding="0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding CleanMessage, Mode=OneWay}"
+                                                                       FontFamily="Consolas, Cascadia Mono, monospace"
+                                                                       FontSize="11.5" Foreground="#e2e8f0"
+                                                                       TextWrapping="Wrap" Padding="0"
+                                                                       VerticalAlignment="Center"/>
                                                         </StackPanel>
                                                     </ControlTemplate>
                                                 </Setter.Value>

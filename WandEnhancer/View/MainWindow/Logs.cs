@@ -9,7 +9,11 @@ namespace WandEnhancer.View.MainWindow
         public ELogType LogType { get; set; }
         public string Message { get; set; }
 
-        public string TimeFormatted => Timestamp.ToString("HH:mm:ss");
+        public string TimeFormatted
+        {
+            get => Timestamp.ToString("HH:mm:ss");
+            set { }
+        }
 
         public string Tag
         {
@@ -33,6 +37,7 @@ namespace WandEnhancer.View.MainWindow
                     default: return "LOG";
                 }
             }
+            set { }
         }
 
         public string TagColor
@@ -47,6 +52,7 @@ namespace WandEnhancer.View.MainWindow
                 if (tag == "AUTO" || tag == "PATCH" || tag == "DOWNLOAD" || tag == "INSTALL") return "#a78bfa"; // Purple
                 return "#94a3b8"; // Slate
             }
+            set { }
         }
 
         public string TagBackground
@@ -61,6 +67,7 @@ namespace WandEnhancer.View.MainWindow
                 if (tag == "AUTO" || tag == "PATCH" || tag == "DOWNLOAD" || tag == "INSTALL") return "#2e1065";
                 return "#1e293b";
             }
+            set { }
         }
 
         public string CleanMessage
@@ -76,6 +83,7 @@ namespace WandEnhancer.View.MainWindow
                 }
                 return trimmed;
             }
+            set { }
         }
     }
 }
