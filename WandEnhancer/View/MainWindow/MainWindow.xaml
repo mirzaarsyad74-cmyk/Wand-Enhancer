@@ -8,6 +8,7 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance local:MainWindowVm}"
         Title="Wand Pro Patcher"
+        Icon="pack://application:,,,/appicon.ico"
         Height="570" MaxHeight="570"
         Width="900" MaxWidth="900" 
         Opacity="0.97"
@@ -27,10 +28,10 @@
             <Grid Background="Transparent" VerticalAlignment="Top"
                   MouseLeftButtonDown="OnDragMove" Height="55">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="25 0 0 0">
-                    <Viewbox VerticalAlignment="Center" Width="32" Height="32">
-                        <Path 
-                            Fill="White" Data="{StaticResource Logo}"/>
-                    </Viewbox>
+                    <Border Width="30" Height="30" CornerRadius="7" ClipToBounds="True" VerticalAlignment="Center">
+                        <Image Source="pack://application:,,,/appicon.png"
+                               RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Border>
                     <TextBlock Foreground="{DynamicResource Foreground}"
                                FontWeight="SemiBold" Opacity="0.9"
                                VerticalAlignment="Center"

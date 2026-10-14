@@ -167,9 +167,12 @@
         </EmbeddedResource>
     </ItemGroup>
     <ItemGroup>
-        <None Include="..\assets\appicon.ico">
+        <Resource Include="..\assets\appicon.ico">
           <Link>appicon.ico</Link>
-        </None>
+        </Resource>
+        <Resource Include="..\assets\appicon.png">
+          <Link>appicon.png</Link>
+        </Resource>
         <None Include="App.config" />
         <None Include="packages.config" />
     </ItemGroup>
