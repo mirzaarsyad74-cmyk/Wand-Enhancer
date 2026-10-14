@@ -270,8 +270,8 @@ namespace WandEnhancer.Core
             using (var timer = new System.Windows.Forms.Timer { Interval = 30000 })
             {
                 notification.Icon = icon;
-                notification.Text = "WandEnhancer update available";
-                notification.BalloonTipTitle = $"WandEnhancer {update.Version} is available";
+                notification.Text = "Wand Pro Patcher update available";
+                notification.BalloonTipTitle = $"Wand Pro Patcher {update.Version} is available";
                 notification.BalloonTipText = BuildNotificationText(update.Notes);
                 notification.BalloonTipIcon = ToolTipIcon.Info;
                 notification.BalloonTipClicked += (sender, args) =>
