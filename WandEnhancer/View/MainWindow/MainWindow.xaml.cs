@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -47,19 +47,6 @@ namespace WandEnhancer.View.MainWindow
         public void ClosePopup()
         {
             PopupHost.IsOpen = false;
-        }
-
-        private void OpenSourceClicked(object sender, MouseButtonEventArgs e)
-        {
-            // Try to open link, do not crash if it fails.
-            try
-            {
-                System.Diagnostics.Process.Start(Constants.RepositoryUrl);
-            }
-            catch (Exception)
-            {
-                ViewModel.ReportRepositoryLinkFailure(Constants.RepositoryUrl);
-            }
         }
     }
 }

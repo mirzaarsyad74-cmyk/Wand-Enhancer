@@ -41,11 +41,6 @@ namespace WandEnhancer.View.Popups
             ShowMoreButton.Visibility = loadFullChangelog == null ? Visibility.Collapsed : Visibility.Visible;
         }
 
-        private void OnOpenReleaseClick(object sender, RoutedEventArgs e)
-        {
-            UpdateNotifier.OpenRelease(_releaseUrl);
-        }
-
         private async void OnAutoUpdateClick(object sender, RoutedEventArgs e)
         {
             try

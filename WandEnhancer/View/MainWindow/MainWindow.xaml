@@ -9,7 +9,7 @@
         d:DataContext="{d:DesignInstance local:MainWindowVm}"
         Title="WandEnhancer"
         Height="570" MaxHeight="570"
-        Width="860" MaxWidth="860" 
+        Width="900" MaxWidth="900" 
         Opacity="0.97"
         Background="Transparent"
         WindowStyle="None"
@@ -264,70 +264,60 @@
                         </Grid>
                     </Border>
 
-                <!-- Bottom Action Controls -->
-                <StackPanel HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal" Grid.Row="2" Margin="10 0 10 10">
-                    <!-- Restore Button (if backup exists) -->
-                    <Button Margin="0 0 8 0" Padding="12 0" Height="36"
-                            Command="{Binding RestoreBackupCommand}"
-                            FontWeight="SemiBold" FontSize="12.5"
-                            Style="{StaticResource {x:Type Button}}"
-                            IsEnabled="{Binding IsIdle}"
-                            Visibility="{Binding CanRestore, Converter={StaticResource ToVisibilityConverter}}"
-                            Content="{DynamicResource mw_restore}"/>
+                <!-- Bottom Action & Security Bar -->
+                <Grid Grid.Row="2" Margin="10 0 10 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-                    <!-- Auto Repair Button -->
-                    <Button Margin="0 0 8 0" Padding="12 0" Height="36"
-                            Command="{Binding AutoRepairCommand}"
-                            FontWeight="SemiBold" FontSize="12.5"
-                            Style="{StaticResource {x:Type Button}}"
-                            IsEnabled="{Binding IsIdle}"
-                            Content="{DynamicResource mw_auto_repair}"/>
-
-                    <!-- Manual Options Popup -->
-                    <Button Margin="0 0 8 0" Padding="12 0" Height="36"
-                            Command="{Binding ApplyPatchCommand}"
-                            FontWeight="SemiBold" FontSize="12.5"
-                            Style="{StaticResource {x:Type Button}}"
-                            IsEnabled="{Binding IsPatchEnabled}"
-                            Content="{DynamicResource mw_patch}"/>
-
-                    <!-- Prominent ⚡ Full Auto Button -->
-                    <Button Height="36" Padding="18 0" MinWidth="190"
-                            Style="{StaticResource ColoredButton}"
-                            IsEnabled="{Binding IsIdle}"
-                            FontWeight="Bold" FontSize="13.5"
-                            Command="{Binding FullAutoCommand}"
-                            Content="{Binding AutoButtonText}"/>
-                </StackPanel>
-
-                <!-- Left Footer Info & Scam Warning Badge -->
-                <DockPanel Grid.Row="2" Margin="10 0 10 10" VerticalAlignment="Center" HorizontalAlignment="Left">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" 
-                                Cursor="Hand" 
-                                HorizontalAlignment="Left"
-                                MouseDown="OpenSourceClicked" 
-                                Background="Transparent">
-                        <Viewbox VerticalAlignment="Center" Width="28" Height="28">
-                            <Path Fill="White" Data="{StaticResource GitHub}"/>
-                        </Viewbox>
-                        <StackPanel Margin="10 0 0 0" VerticalAlignment="Center">
-                            <TextBlock FontSize="10">
-                                <Hyperlink Foreground="{DynamicResource AccentForeground}"><Run Text="{DynamicResource mw_source_code}"/></Hyperlink>
-                                <Run Text=" • " Foreground="{DynamicResource MutedForeground}"/>
-                                <Run Foreground="{DynamicResource AccentForeground}" Text="{DynamicResource mw_made_by}"/>
-                                <Run Text=" • " Foreground="{DynamicResource MutedForeground}"/>
-                                <Run Foreground="{DynamicResource MutedForeground}" Text="{DynamicResource mw_star_hint}"/>
-                            </TextBlock>
-                            <!-- Prominent Anti-Scam Open Source Warning Badge -->
-                            <Border Margin="0 4 0 0" Background="#261214" BorderBrush="#7f1d1d" BorderThickness="1" CornerRadius="3" Padding="6 2" HorizontalAlignment="Left">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="⚠ " Foreground="#f87171" FontSize="10" FontWeight="Bold"/>
-                                    <TextBlock Text="{DynamicResource mw_scam_warning}" Foreground="#fca5a5" FontSize="10" FontWeight="SemiBold"/>
-                                </StackPanel>
-                            </Border>
+                    <!-- Left: Anti-Scam Warning Notice (Non-clickable, no repo links) -->
+                    <Border Grid.Column="0" Background="#1c0f13" BorderBrush="#7f1d1d" BorderThickness="1" 
+                            CornerRadius="5" Padding="10 6" VerticalAlignment="Center" HorizontalAlignment="Left"
+                            Margin="0 0 12 0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⚠ " Foreground="#f87171" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="{DynamicResource mw_scam_warning}" Foreground="#fca5a5" FontSize="10.5" 
+                                       FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
                         </StackPanel>
+                    </Border>
+
+                    <!-- Right: Bottom Action Controls -->
+                    <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+                        <!-- Restore Button (if backup exists) -->
+                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                                Command="{Binding RestoreBackupCommand}"
+                                FontWeight="SemiBold" FontSize="12.5"
+                                Style="{StaticResource {x:Type Button}}"
+                                IsEnabled="{Binding IsIdle}"
+                                Visibility="{Binding CanRestore, Converter={StaticResource ToVisibilityConverter}}"
+                                Content="{DynamicResource mw_restore}"/>
+
+                        <!-- Auto Repair Button -->
+                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                                Command="{Binding AutoRepairCommand}"
+                                FontWeight="SemiBold" FontSize="12.5"
+                                Style="{StaticResource {x:Type Button}}"
+                                IsEnabled="{Binding IsIdle}"
+                                Content="{DynamicResource mw_auto_repair}"/>
+
+                        <!-- Manual Options Popup -->
+                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                                Command="{Binding ApplyPatchCommand}"
+                                FontWeight="SemiBold" FontSize="12.5"
+                                Style="{StaticResource {x:Type Button}}"
+                                IsEnabled="{Binding IsPatchEnabled}"
+                                Content="{DynamicResource mw_patch}"/>
+
+                        <!-- Prominent ⚡ Full Auto Button -->
+                        <Button Height="36" Padding="18 0" MinWidth="190"
+                                Style="{StaticResource ColoredButton}"
+                                IsEnabled="{Binding IsIdle}"
+                                FontWeight="Bold" FontSize="13.5"
+                                Command="{Binding FullAutoCommand}"
+                                Content="{Binding AutoButtonText}"/>
                     </StackPanel>
-                </DockPanel>
+                </Grid>
             </Grid>
             
             <controls:PopupHost x:Name="PopupHost"/>

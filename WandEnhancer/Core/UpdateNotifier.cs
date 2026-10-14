@@ -279,8 +279,6 @@ namespace WandEnhancer.Core
                     context.ExitThread();
                     if (onNotificationClick != null)
                         onNotificationClick(update);
-                    else
-                        OpenRelease(update.Url);
                 };
 
                 timer.Tick += (sender, args) => context.ExitThread();
