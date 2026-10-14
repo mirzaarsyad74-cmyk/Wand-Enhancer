@@ -29,6 +29,9 @@ namespace WandEnhancer.Core
             public string Version { get; set; }
             public string Notes { get; set; }
             public string Url { get; set; }
+            public string DownloadUrl { get; set; }
+            public string AssetName { get; set; }
+            public long AssetSize { get; set; }
         }
 
         private sealed class GitHubRelease
@@ -37,6 +40,21 @@ namespace WandEnhancer.Core
             public string TagName { get; set; }
 
             public string Body { get; set; }
+
+            [JsonProperty("assets")]
+            public GitHubReleaseAsset[] Assets { get; set; }
+        }
+
+        private sealed class GitHubReleaseAsset
+        {
+            [JsonProperty("name")]
+            public string Name { get; set; }
+
+            [JsonProperty("size")]
+            public long Size { get; set; }
+
+            [JsonProperty("browser_download_url")]
+            public string BrowserDownloadUrl { get; set; }
         }
 
         /// <summary>
@@ -129,6 +147,22 @@ namespace WandEnhancer.Core
                     Notes = release.Body,
                     Url = Constants.RepositoryUrl + "/releases/tag/" + Uri.EscapeDataString(release.TagName)
                 };
+
+                var exeAsset = release.Assets?.FirstOrDefault(a =>
+                    !string.IsNullOrEmpty(a.Name) &&
+                    (a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)));
+
+                if (exeAsset != null)
+                {
+                    update.DownloadUrl = exeAsset.BrowserDownloadUrl;
+                    update.AssetName = exeAsset.Name;
+                    update.AssetSize = exeAsset.Size;
+                }
+                else
+                {
+                    update.DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{release.TagName}/WandEnhancer.exe";
+                    update.AssetName = "WandEnhancer.exe";
+                }
 
                 LauncherLog.Write($"WandEnhancer {update.Version} is available: {update.Url}", ELogType.Info);
                 onUpdateFound?.Invoke(update);
@@ -268,6 +302,80 @@ namespace WandEnhancer.Core
             {
                 LauncherLog.Write($"Could not open the release page: {e.Message}", ELogType.Warn);
             }
+        }
+
+        /// <summary>
+        /// Downloads the latest release binary from GitHub and automatically swaps/updates the running executable.
+        /// </summary>
+        public static async Task DownloadAndApplyUpdateAsync(
+            UpdateRelease update,
+            IProgress<int> progress = null,
+            Action<string, ELogType> logger = null)
+        {
+            if (update == null || string.IsNullOrEmpty(update.DownloadUrl))
+            {
+                throw new ArgumentException("Invalid update release metadata or download URL.");
+            }
+
+            string tempUpdateExe = Path.Combine(Path.GetTempPath(), $"WandEnhancer-Update-{Guid.NewGuid():N}.exe");
+            logger?.Invoke($"[GITHUB-UPDATE] Downloading WandEnhancer v{update.Version} from GitHub...", ELogType.Info);
+
+            using (var client = new WebClient())
+            {
+                client.Headers.Add("User-Agent", $"WandEnhancer/{Constants.Version}");
+                client.Headers.Add("Accept", "application/octet-stream");
+                
+                int lastPercent = -1;
+                client.DownloadProgressChanged += (s, e) =>
+                {
+                    progress?.Report(e.ProgressPercentage);
+                    if (e.ProgressPercentage % 25 == 0 && e.ProgressPercentage != lastPercent)
+                    {
+                        lastPercent = e.ProgressPercentage;
+                        logger?.Invoke($"[GITHUB-UPDATE] Downloading update: {e.ProgressPercentage}%", ELogType.Info);
+                    }
+                };
+
+                await client.DownloadFileTaskAsync(new Uri(update.DownloadUrl), tempUpdateExe);
+            }
+
+            if (!File.Exists(tempUpdateExe) || new FileInfo(tempUpdateExe).Length < 10000)
+            {
+                throw new IOException("Downloaded update file is missing or corrupted.");
+            }
+
+            logger?.Invoke("[GITHUB-UPDATE] Update download complete! Applying update and restarting...", ELogType.Success);
+
+            string currentExe = Assembly.GetExecutingAssembly().Location;
+            string updaterScript = Path.Combine(Path.GetTempPath(), $"wand-update-{Guid.NewGuid():N}.cmd");
+
+            string scriptContent = $@"@echo off
+timeout /t 1 /nobreak > nul
+:retry
+copy /y ""{tempUpdateExe}"" ""{currentExe}"" > nul
+if errorlevel 1 (
+    timeout /t 1 /nobreak > nul
+    goto retry
+)
+del ""{tempUpdateExe}"" > nul 2>&1
+start """" ""{currentExe}""
+del ""%~f0"" > nul 2>&1
+";
+
+            File.WriteAllText(updaterScript, scriptContent);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{updaterScript}\"",
+                CreateNoWindow = true,
+                UseShellExecute = false
+            });
+
+            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                System.Windows.Application.Current.Shutdown();
+            });
         }
     }
 }

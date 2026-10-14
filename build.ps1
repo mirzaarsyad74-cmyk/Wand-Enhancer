@@ -67,6 +67,11 @@ function Resolve-TargetFrameworkRoot {
         return $root
     }
 
+    $packageBuild = Join-Path $repoRoot 'packages\Microsoft.NETFramework.ReferenceAssemblies.net48.1.0.3\build'
+    if (Test-Path (Join-Path $packageBuild '.NETFramework\v4.8\RedistList\FrameworkList.xml')) {
+        return $packageBuild
+    }
+
     return $null
 }
 

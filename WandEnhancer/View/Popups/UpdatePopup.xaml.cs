@@ -12,13 +12,22 @@ namespace WandEnhancer.View.Popups
         private readonly Func<Task<string>> _loadFullChangelog;
         private readonly string _latestNotes;
         private readonly string _releaseUrl;
+        private readonly UpdateNotifier.UpdateRelease _updateRelease;
         private string _fullChangelog;
         private bool _showingFullChangelog;
 
-        public UpdatePopup(string currentVersion, string latestVersion, string latestNotes,
-            string releaseUrl, Func<Task<string>> loadFullChangelog)
+        internal UpdatePopup(string currentVersion, string latestVersion, string latestNotes,
+            string releaseUrl, Func<Task<string>> loadFullChangelog, UpdateNotifier.UpdateRelease updateRelease = null)
         {
             InitializeComponent();
+
+            _updateRelease = updateRelease ?? new UpdateNotifier.UpdateRelease
+            {
+                Version = latestVersion,
+                Notes = latestNotes,
+                Url = releaseUrl,
+                DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{latestVersion}/WandEnhancer.exe"
+            };
 
             CurrentVersionValue.Text = currentVersion;
             LatestVersionValue.Text = latestVersion;
@@ -35,6 +44,32 @@ namespace WandEnhancer.View.Popups
         private void OnOpenReleaseClick(object sender, RoutedEventArgs e)
         {
             UpdateNotifier.OpenRelease(_releaseUrl);
+        }
+
+        private async void OnAutoUpdateClick(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                AutoUpdateButton.IsEnabled = false;
+                AutoUpdateButton.Content = LocalizationManager.Get("up_updating");
+                SetNotesText(LocalizationManager.Get("up_downloading_update"));
+
+                var progress = new Progress<int>(percent =>
+                {
+                    AutoUpdateButton.Content = $"{percent}%";
+                });
+
+                await UpdateNotifier.DownloadAndApplyUpdateAsync(_updateRelease, progress, (msg, type) =>
+                {
+                    Dispatcher.Invoke(() => SetNotesText(msg));
+                });
+            }
+            catch (Exception ex)
+            {
+                AutoUpdateButton.IsEnabled = true;
+                AutoUpdateButton.Content = LocalizationManager.Get("up_auto_update");
+                SetNotesText($"Update failed: {ex.Message}");
+            }
         }
 
         private async void OnShowMoreClick(object sender, RoutedEventArgs e)

@@ -7,7 +7,6 @@ on:
 
 jobs:
   publish-release:
-    if: github.repository == 'k1tbyte/Wand-Enhancer'
     runs-on: windows-latest
     permissions:
       contents: write
@@ -30,6 +29,14 @@ jobs:
           cache: pnpm
           cache-dependency-path: web-panel/pnpm-lock.yaml
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Validate release metadata
         shell: pwsh
         run: ./scripts/validate-release-metadata.ps1 -ExpectedVersion $env:RELEASE_VERSION
@@ -38,9 +45,25 @@ jobs:
         shell: pwsh
         run: ./scripts/get-changelog-section.ps1 -Version $env:RELEASE_VERSION -OutputPath release-notes.md
 
-      - name: Build release
+      - name: Build standard release (offline)
         shell: pwsh
-        run: ./build.ps1 -Configuration Release
+        run: |
+          ./build.ps1 -Configuration Release
+          Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer.exe
+
+      - name: Build auto-update release
+        shell: pwsh
+        run: |
+          ./build.ps1 -Configuration Release -EnableUpdateNotifications
+          Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer-AutoUpdate.exe
+
+      - name: Generate SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-FileHash ./WandEnhancer.exe, ./WandEnhancer-AutoUpdate.exe -Algorithm SHA256 |
+            ForEach-Object { "$($_.Hash)  $([IO.Path]::GetFileName($_.Path))" } |
+            Out-File -Encoding ascii SHA256SUMS.txt
+          Get-Content SHA256SUMS.txt
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
@@ -48,7 +71,11 @@ jobs:
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           body_path: release-notes.md
-          files: CHANGELOG.md
+          files: |
+            CHANGELOG.md
+            ./WandEnhancer.exe
+            ./WandEnhancer-AutoUpdate.exe
+            SHA256SUMS.txt
           fail_on_unmatched_files: true
           # RC tags must not replace the latest stable release.
           prerelease: ${{ contains(github.ref_name, '-') }}

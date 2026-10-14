@@ -12,6 +12,10 @@ on:
   push:
     branches: [master, 'feature/rc_*']
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: windows-latest
@@ -31,6 +35,14 @@ jobs:
           cache: pnpm
           cache-dependency-path: web-panel/pnpm-lock.yaml
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.config') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Build unsigned executable
         shell: pwsh
         run: |
@@ -46,6 +58,7 @@ jobs:
           name: WandEnhancer-unsigned
           path: WandEnhancer/bin/Release/WandEnhancer.exe
           if-no-files-found: error
+          retention-days: 14
 
       # The published artifact is always the offline build; this only proves the
       # opt-in variant still compiles and passes its checks on every push.

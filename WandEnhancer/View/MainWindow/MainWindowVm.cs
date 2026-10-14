@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
@@ -31,6 +31,7 @@ namespace WandEnhancer.View.MainWindow
         private void UseInstall(WeModConfig config)
         {
             WeModInfo = config;
+            OnPropertyChanged(nameof(AutoButtonText));
             if (config == null)
             {
                 return;
@@ -40,6 +41,7 @@ namespace WandEnhancer.View.MainWindow
             AlreadyPatched = Enhancer.IsPatched(config.RootDirectory);
             CanRestore = Enhancer.HasBackup(config.RootDirectory);
             IsPatchEnabled = !AlreadyPatched;
+            OnPropertyChanged(nameof(AutoButtonText));
 
             Log(LocalizationManager.Get(AlreadyPatched ? "log_already_patched" : "log_ready"),
                 AlreadyPatched ? ELogType.Warn : ELogType.Info);
@@ -87,12 +89,35 @@ namespace WandEnhancer.View.MainWindow
         /// <summary>Bound by buttons that must not be clickable mid-run.</summary>
         public bool IsIdle => !_isBusy;
 
+        private bool _isTerminalAutoScroll = true;
+
+        public bool IsTerminalAutoScroll
+        {
+            get => _isTerminalAutoScroll;
+            set => SetProperty(ref _isTerminalAutoScroll, value);
+        }
+
+        public string AutoButtonText
+        {
+            get
+            {
+                if (IsBusy) return "⚡ " + LocalizationManager.Get("mw_terminal_busy") + "...";
+                if (WeModInfo == null) return LocalizationManager.Get("mw_auto_download");
+                if (AlreadyPatched) return "⚡ " + LocalizationManager.Get("mw_auto_patch");
+                return LocalizationManager.Get("mw_auto_patch");
+            }
+        }
+
         public RelayCommand SetFolderPathCommand { get; }
         public RelayCommand ApplyPatchCommand { get; }
         public RelayCommand RestoreBackupCommand { get; }
         public RelayCommand OpenSettingsCommand { get; }
         public RelayCommand CopyLogsCommand { get; }
         public RelayCommand ExportLogsCommand { get; }
+        public RelayCommand FullAutoCommand { get; }
+        public RelayCommand AutoRepairCommand { get; }
+        public RelayCommand ClearLogsCommand { get; }
+        public RelayCommand ToggleAutoScrollCommand { get; }
 
         private void OnFolderPathSelection(object obj)
         {
@@ -184,13 +209,126 @@ namespace WandEnhancer.View.MainWindow
             {
                 var entry = new LogEntry
                 {
+                    Timestamp = DateTime.Now,
                     LogType = logType,
-                    Message = $"[{logType.ToString().ToUpper()}] {message}"
+                    Message = message.StartsWith("[") ? message : $"[{logType.ToString().ToUpper()}] {message}"
                 };
                 LogList.Add(entry);
-                _shell.ScrollLogIntoView(entry);
+                if (IsTerminalAutoScroll)
+                {
+                    _shell.ScrollLogIntoView(entry);
+                }
                 // Force CanExecute re-evaluation when appending log entries.
                 System.Windows.Input.CommandManager.InvalidateRequerySuggested();
+            });
+        }
+
+        private void OnToggleAutoScroll(object param)
+        {
+            IsTerminalAutoScroll = !IsTerminalAutoScroll;
+            Log(IsTerminalAutoScroll ? "[TERMINAL] Auto-scroll enabled." : "[TERMINAL] Auto-scroll paused.", ELogType.Info);
+        }
+
+        private void OnClearLogs(object param)
+        {
+            LogList.Clear();
+            Log("[TERMINAL] Live buffer cleared.", ELogType.Info);
+        }
+
+        private async void OnFullAuto(object param)
+        {
+            if (IsBusy) return;
+
+            IsBusy = true;
+            OnPropertyChanged(nameof(AutoButtonText));
+
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    if (WeModInfo == null)
+                    {
+                        Log("[FULL-AUTO] Wand installation not found. Starting automatic download and installation...", ELogType.Info);
+                        var progress = new Progress<int>(pct => { });
+                        string installer = await WandManagerService.DownloadLatestWandAsync(Log, progress);
+                        var newConfig = await WandManagerService.InstallWandAsync(installer, Log);
+                        Application.Current.Dispatcher.Invoke(() => UseInstall(newConfig));
+                    }
+
+                    if (WeModInfo == null)
+                    {
+                        Log("[FULL-AUTO] Could not locate or initialize Wand installation.", ELogType.Error);
+                        return;
+                    }
+
+                    Log("[FULL-AUTO] Applying full automated patch configuration...", ELogType.Info);
+                    WandManagerService.AutoPatch(WeModInfo, Log);
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        AlreadyPatched = true;
+                        CanRestore = true;
+                        IsPatchEnabled = false;
+                        OnPropertyChanged(nameof(AutoButtonText));
+                    });
+
+                    Log("[FULL-AUTO] ⚡ Everything is set up and ready! Enjoy Wand with Pro features.", ELogType.Success);
+                }
+                catch (Exception ex)
+                {
+                    Log($"[FULL-AUTO] Auto setup failed: {ex.Message}", ELogType.Error);
+                }
+                finally
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IsBusy = false;
+                        OnPropertyChanged(nameof(AutoButtonText));
+                    });
+                }
+            });
+        }
+
+        private async void OnAutoRepair(object param)
+        {
+            if (IsBusy) return;
+
+            IsBusy = true;
+            OnPropertyChanged(nameof(AutoButtonText));
+
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    Log("[AUTO-REPAIR] Initiating full auto-repair and reinstall sequence...", ELogType.Info);
+                    var repairedConfig = await WandManagerService.AutoRepairAsync(WeModInfo, Log);
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (repairedConfig != null)
+                        {
+                            UseInstall(repairedConfig);
+                            AlreadyPatched = true;
+                            CanRestore = true;
+                            IsPatchEnabled = false;
+                        }
+                        OnPropertyChanged(nameof(AutoButtonText));
+                    });
+
+                    Log("[AUTO-REPAIR] ⚡ Wand successfully repaired and re-patched!", ELogType.Success);
+                }
+                catch (Exception ex)
+                {
+                    Log($"[AUTO-REPAIR] Repair failed: {ex.Message}", ELogType.Error);
+                }
+                finally
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IsBusy = false;
+                        OnPropertyChanged(nameof(AutoButtonText));
+                    });
+                }
             });
         }
 
@@ -204,7 +342,7 @@ namespace WandEnhancer.View.MainWindow
             var builder = new StringBuilder();
             foreach (var entry in LogList)
             {
-                builder.AppendLine(entry.Message);
+                builder.AppendLine($"[{entry.TimeFormatted}] [{entry.Tag}] {entry.CleanMessage}");
             }
             return builder.ToString();
         }
@@ -261,6 +399,13 @@ namespace WandEnhancer.View.MainWindow
             OpenSettingsCommand = new RelayCommand(OnOpenSettings);
             CopyLogsCommand = new RelayCommand(OnCopyLogs, HasLogs);
             ExportLogsCommand = new RelayCommand(OnExportLogs, HasLogs);
+            FullAutoCommand = new RelayCommand(OnFullAuto);
+            AutoRepairCommand = new RelayCommand(OnAutoRepair);
+            ClearLogsCommand = new RelayCommand(OnClearLogs);
+            ToggleAutoScrollCommand = new RelayCommand(OnToggleAutoScroll);
+
+            // Display anti-scam notice on startup
+            Log("[SECURITY] " + LocalizationManager.Get("mw_scam_warning"), ELogType.Warn);
 
             UseInstall(WeModInstalls.FindWeMod());
             if (WeModInfo == null)
