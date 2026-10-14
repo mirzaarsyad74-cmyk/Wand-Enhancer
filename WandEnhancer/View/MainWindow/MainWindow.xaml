@@ -27,21 +27,26 @@
         <Grid>
             <Grid Background="Transparent" VerticalAlignment="Top"
                   MouseLeftButtonDown="OnDragMove" Height="55">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="25 0 0 0">
-                    <Border Width="30" Height="30" CornerRadius="7" ClipToBounds="True" VerticalAlignment="Center">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 0 0 0">
+                    <Border Width="34" Height="34" CornerRadius="7" ClipToBounds="True" VerticalAlignment="Center">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#0284c7" BlurRadius="8" Direction="0" ShadowDepth="0" Opacity="0.45"/>
+                        </Border.Effect>
                         <Image Source="pack://application:,,,/appicon.png"
                                RenderOptions.BitmapScalingMode="HighQuality" />
                     </Border>
                     <TextBlock Foreground="{DynamicResource Foreground}"
-                               FontWeight="SemiBold" Opacity="0.9"
+                               FontWeight="Bold" Opacity="0.95"
                                VerticalAlignment="Center"
-                               FontSize="18" Margin="10 0 0 0">
-                        <Bold>
-                            Wand Pro Patcher
-                        </Bold>
+                               FontSize="17" Margin="12 0 0 0">
+                        Wand Pro Patcher
                     </TextBlock>
+                    <Border Background="#1e1b4b" BorderBrush="#6366f1" BorderThickness="1"
+                            CornerRadius="4" Padding="5 1" Margin="8 0 0 0" VerticalAlignment="Center">
+                        <TextBlock Text="PRO" FontSize="9.5" FontWeight="Bold" Foreground="#a5b4fc" FontFamily="Consolas, sans-serif"/>
+                    </Border>
                     <TextBlock x:Name="VersionLabel" VerticalAlignment="Bottom"
-                               Opacity="0.7" FontSize="10" Margin="5 0 0 5"
+                               Opacity="0.5" FontSize="10" Margin="6 0 0 5"
                                Foreground="{DynamicResource Foreground}">
                         v 1.0.0
                     </TextBlock>
@@ -72,20 +77,32 @@
 
                 </StackPanel>
                                 
-                <StackPanel  HorizontalAlignment="Right" Orientation="Horizontal">
+                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0 0 15 0" VerticalAlignment="Center">
                     <Button
-                        Margin="0 0 5 0"
-                        Width="25" Height="25" Padding="5.5"
+                        Margin="0 0 6 0"
+                        Width="28" Height="28" Padding="6"
                         Style="{StaticResource IconButton}"
                         Tag="{StaticResource CogIcon}"
+                        ToolTip="{DynamicResource settings_title}"
                         Command="{Binding OpenSettingsCommand}"
                         />
                     <Button
-                        Margin="9 0 15 0"
+                        Margin="0 0 6 0"
+                        Tag="{StaticResource MinimizeIcon}"
+                        Width="28" Height="28" Padding="7"
+                        Style="{StaticResource IconButton}"
+                        Click="OnMinimize"
+                        ToolTip="Minimize"
+                        VerticalAlignment="Center">
+                        <Button.Resources>
+                            <CornerRadius x:Key="CornerRadius">5 5 5 5</CornerRadius>
+                        </Button.Resources>
+                    </Button>
+                    <Button
                         Tag="{StaticResource CloseIcon}"
-                        Width="25" Height="25" Padding="6.5"
-                        HorizontalAlignment="Right"
+                        Width="28" Height="28" Padding="7"
                         Click="OnClosing"
+                        ToolTip="Close"
                         VerticalAlignment="Center">
                         <Button.Resources>
                             <CornerRadius x:Key="CornerRadius">5 5 5 5</CornerRadius>
@@ -94,8 +111,8 @@
                             <Style BasedOn="{StaticResource IconButton}" TargetType="Button">
                                 <Style.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter Property="Background" Value="{DynamicResource Secondary}"/>
-                                        <Setter Property="Foreground" Value="{DynamicResource Destructive}"/>
+                                        <Setter Property="Background" Value="#7f1d1d"/>
+                                        <Setter Property="Foreground" Value="#fca5a5"/>
                                     </Trigger>
                                 </Style.Triggers>
                             </Style>
@@ -221,14 +238,14 @@
                                             <Setter Property="Template">
                                                 <Setter.Value>
                                                     <ControlTemplate TargetType="ListBoxItem">
-                                                        <StackPanel Orientation="Horizontal" Margin="0 1">
+                                                        <DockPanel LastChildFill="True" Margin="0 1.5">
                                                             <!-- Timestamp -->
-                                                            <TextBlock Text="{Binding TimeFormatted, StringFormat='[{0}]'}"
+                                                            <TextBlock DockPanel.Dock="Left" Text="{Binding TimeFormatted, StringFormat='[{0}]'}"
                                                                        FontFamily="Consolas, Cascadia Mono, monospace"
                                                                        FontSize="11" Foreground="#475569" Margin="0 0 6 0"
                                                                        VerticalAlignment="Top"/>
                                                             <!-- Tag Badge -->
-                                                            <Border Background="{Binding TagBackground}" BorderBrush="{Binding TagColor}"
+                                                            <Border DockPanel.Dock="Left" Background="{Binding TagBackground}" BorderBrush="{Binding TagColor}"
                                                                     BorderThickness="1" CornerRadius="3" Padding="4 1" Margin="0 0 7 0"
                                                                     VerticalAlignment="Top">
                                                                 <TextBlock Text="{Binding Tag}" FontSize="9.5" FontWeight="Bold"
@@ -240,8 +257,8 @@
                                                                        FontFamily="Consolas, Cascadia Mono, monospace"
                                                                        FontSize="11.5" Foreground="#e2e8f0"
                                                                        TextWrapping="Wrap" Padding="0"
-                                                                       VerticalAlignment="Center"/>
-                                                        </StackPanel>
+                                                                       VerticalAlignment="Top"/>
+                                                        </DockPanel>
                                                     </ControlTemplate>
                                                 </Setter.Value>
                                             </Setter>
@@ -252,28 +269,29 @@
                         </Grid>
                     </Border>
 
-                <!-- Bottom Action & Security Bar -->
+                <!-- Bottom Action & Status Bar -->
                 <Grid Grid.Row="1" Margin="10 0 10 10">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Left: Anti-Scam Warning Notice (Non-clickable, no repo links) -->
-                    <Border Grid.Column="0" Background="#1c0f13" BorderBrush="#7f1d1d" BorderThickness="1" 
-                            CornerRadius="5" Padding="10 6" VerticalAlignment="Center" HorizontalAlignment="Left"
+                    <!-- Left: Real-time System Status Pill -->
+                    <Border Grid.Column="0" Background="{Binding StatusBadgeBackground}" 
+                            BorderBrush="{Binding StatusBadgeBorder}" BorderThickness="1" 
+                            CornerRadius="6" Padding="12 6" VerticalAlignment="Center" HorizontalAlignment="Left"
                             Margin="0 0 12 0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="⚠ " Foreground="#f87171" FontSize="11.5" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock Text="{DynamicResource mw_scam_warning}" Foreground="#fca5a5" FontSize="10.5" 
-                                       FontWeight="SemiBold" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding StatusBadgeText}" Foreground="{Binding StatusBadgeForeground}" 
+                                       FontSize="11" FontWeight="Bold" FontFamily="{StaticResource Inter}"
+                                       VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
 
                     <!-- Right: Bottom Action Controls -->
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
                         <!-- Restore Button (if backup exists) -->
-                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                        <Button Margin="0 0 8 0" Padding="14 0" Height="36"
                                 Command="{Binding RestoreBackupCommand}"
                                 FontWeight="SemiBold" FontSize="12.5"
                                 Style="{StaticResource {x:Type Button}}"
@@ -282,7 +300,7 @@
                                 Content="{DynamicResource mw_restore}"/>
 
                         <!-- Auto Repair Button -->
-                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                        <Button Margin="0 0 8 0" Padding="14 0" Height="36"
                                 Command="{Binding AutoRepairCommand}"
                                 FontWeight="SemiBold" FontSize="12.5"
                                 Style="{StaticResource {x:Type Button}}"
@@ -290,7 +308,7 @@
                                 Content="{DynamicResource mw_auto_repair}"/>
 
                         <!-- Manual Options Popup -->
-                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                        <Button Margin="0 0 8 0" Padding="14 0" Height="36"
                                 Command="{Binding ApplyPatchCommand}"
                                 FontWeight="SemiBold" FontSize="12.5"
                                 Style="{StaticResource {x:Type Button}}"
@@ -298,7 +316,7 @@
                                 Content="{DynamicResource mw_patch}"/>
 
                         <!-- Prominent ⚡ Full Auto Button -->
-                        <Button Height="36" Padding="18 0" MinWidth="190"
+                        <Button Height="38" Padding="20 0" MinWidth="195"
                                 Style="{StaticResource ColoredButton}"
                                 IsEnabled="{Binding IsIdle}"
                                 FontWeight="Bold" FontSize="13.5"

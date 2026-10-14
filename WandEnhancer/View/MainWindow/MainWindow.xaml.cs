@@ -39,6 +39,11 @@ namespace WandEnhancer.View.MainWindow
             this.DragMove();
         }
 
+        private void OnMinimize(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
         private void OnClosing(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

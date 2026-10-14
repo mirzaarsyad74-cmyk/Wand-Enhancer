@@ -31,7 +31,7 @@ namespace WandEnhancer.View.MainWindow
         private void UseInstall(WeModConfig config)
         {
             WeModInfo = config;
-            OnPropertyChanged(nameof(AutoButtonText));
+            NotifyStatusChanged();
             if (config == null)
             {
                 return;
@@ -41,7 +41,7 @@ namespace WandEnhancer.View.MainWindow
             AlreadyPatched = Enhancer.IsPatched(config.RootDirectory);
             CanRestore = Enhancer.HasBackup(config.RootDirectory);
             IsPatchEnabled = !AlreadyPatched;
-            OnPropertyChanged(nameof(AutoButtonText));
+            NotifyStatusChanged();
 
             Log(LocalizationManager.Get(AlreadyPatched ? "log_already_patched" : "log_ready"),
                 AlreadyPatched ? ELogType.Warn : ELogType.Info);
@@ -60,7 +60,13 @@ namespace WandEnhancer.View.MainWindow
         public bool AlreadyPatched
         {
             get => _alreadyPatched;
-            set => SetProperty(ref _alreadyPatched, value);
+            set
+            {
+                if (SetProperty(ref _alreadyPatched, value))
+                {
+                    NotifyStatusChanged();
+                }
+            }
         }
 
         private bool _canRestore;
@@ -82,12 +88,66 @@ namespace WandEnhancer.View.MainWindow
                 if (SetProperty(ref _isBusy, value))
                 {
                     OnPropertyChanged(nameof(IsIdle));
+                    NotifyStatusChanged();
                 }
             }
         }
 
         /// <summary>Bound by buttons that must not be clickable mid-run.</summary>
         public bool IsIdle => !_isBusy;
+
+        private void NotifyStatusChanged()
+        {
+            OnPropertyChanged(nameof(StatusBadgeText));
+            OnPropertyChanged(nameof(StatusBadgeBackground));
+            OnPropertyChanged(nameof(StatusBadgeBorder));
+            OnPropertyChanged(nameof(StatusBadgeForeground));
+            OnPropertyChanged(nameof(AutoButtonText));
+        }
+
+        public string StatusBadgeText
+        {
+            get
+            {
+                if (IsBusy) return "⚡ Processing...";
+                if (AlreadyPatched) return "● Wand Patched · Pro Active";
+                if (WeModInfo != null) return "● Wand Detected · Ready";
+                return "● Wand Not Found · Auto-Install Ready";
+            }
+        }
+
+        public string StatusBadgeBackground
+        {
+            get
+            {
+                if (IsBusy) return "#1e1b4b";
+                if (AlreadyPatched) return "#052e16";
+                if (WeModInfo != null) return "#082f49";
+                return "#2e1d05";
+            }
+        }
+
+        public string StatusBadgeBorder
+        {
+            get
+            {
+                if (IsBusy) return "#6366f1";
+                if (AlreadyPatched) return "#166534";
+                if (WeModInfo != null) return "#0369a1";
+                return "#b45309";
+            }
+        }
+
+        public string StatusBadgeForeground
+        {
+            get
+            {
+                if (IsBusy) return "#a5b4fc";
+                if (AlreadyPatched) return "#4ade80";
+                if (WeModInfo != null) return "#38bdf8";
+                return "#fcd34d";
+            }
+        }
 
         private bool _isTerminalAutoScroll = true;
 
@@ -103,7 +163,6 @@ namespace WandEnhancer.View.MainWindow
             {
                 if (IsBusy) return "⚡ " + LocalizationManager.Get("mw_terminal_busy") + "...";
                 if (WeModInfo == null) return LocalizationManager.Get("mw_auto_download");
-                if (AlreadyPatched) return "⚡ " + LocalizationManager.Get("mw_auto_patch");
                 return LocalizationManager.Get("mw_auto_patch");
             }
         }
