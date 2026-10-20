@@ -82,6 +82,7 @@
         <Compile Include="Core\Patching\Shared\PeImage.cs" />
         <Compile Include="Core\Patching\Shared\ElectronFuseWire.cs" />
         <Compile Include="Core\Patching\Shared\DiskFusePatch.cs" />
+        <Compile Include="Core\Patching\Shared\AuxiliaryCompatibility.cs" />
         <Compile Include="Core\Patching\Shared\IconTransplant.cs" />
         <Compile Include="Core\Patching\Shared\LauncherDeployment.cs" />
         <Compile Include="Core\Patching\Content\AsarContentPatcher.cs" />
@@ -105,7 +106,10 @@
         <Compile Include="Core\Js\PatchPayload.cs" />
         <Compile Include="Core\Services\LocalizationManager.cs" />
         <Compile Include="Core\Services\SettingsManager.cs" />
+        <Compile Include="Core\AvatarAsset.cs" />
         <Compile Include="Core\Services\WandManagerService.cs" />
+        <Compile Include="Core\Services\UpdateWatcherService.cs" />
+        <Compile Include="Core\Services\WatcherAutostart.cs" />
         <Compile Include="Models\WeModConfig.cs" />
         <Compile Include="Models\PatchConfig.cs" />
         <Compile Include="Program.cs" />
@@ -143,6 +147,7 @@
         <Page Include="Locale\lang.uk-UA.xaml" />
         <Page Include="Locale\lang.ja-JP.xaml" />
         <Page Include="Locale\lang.tr-TR.xaml" />
+        <Page Include="Locale\lang.bn-BD.xaml" />
         <Page Include="Style\ColorScheme.xaml" />
         <Page Include="Style\Icons.xaml" />
         <Page Include="Style\Styles.xaml" />
@@ -194,6 +199,9 @@
       <EmbeddedResource Include="Patches\*.js">
         <LogicalName>patches/%(Filename)%(Extension)</LogicalName>
       </EmbeddedResource>
+      <EmbeddedResource Include="Patches\*.png">
+        <LogicalName>patches/%(Filename)%(Extension)</LogicalName>
+      </EmbeddedResource>
     </ItemGroup>
     
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -202,6 +210,10 @@
         <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
       </PropertyGroup>
       <Error Condition="!Exists('..\packages\ILRepack.2.0.41\build\ILRepack.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\ILRepack.2.0.41\build\ILRepack.props'))" />
+    </Target>
+
+    <Target Name="EnsureWebPanelDistBuild" BeforeTargets="BeforeBuild">
+      <Error Condition="!Exists('..\web-panel\dist\index.html')" Text="web-panel/dist/index.html is missing. Run 'cd web-panel &amp;&amp; pnpm run build' before building WandEnhancer." />
     </Target>
 
     <!-- Which commit a binary was built from. AssemblyVersion is pinned to the release tag, so
