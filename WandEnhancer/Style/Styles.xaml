@@ -167,6 +167,59 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <Style x:Key="DangerButton" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="#1f1315"/>
+        <Setter Property="BorderBrush" Value="#7f1d1d"/>
+        <Setter Property="Foreground" Value="#f87171"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border CornerRadius="5"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#dc2626" BlurRadius="6" Direction="0" ShadowDepth="0" Opacity="0.2"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#38151b"/>
+                <Setter Property="BorderBrush" Value="#b91c1c"/>
+                <Setter Property="Foreground" Value="#fca5a5"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="#1e1819"/>
+                <Setter Property="BorderBrush" Value="#3b2024"/>
+                <Setter Property="Foreground" Value="#784b50"/>
+                <Setter Property="Opacity" Value="0.5"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="{x:Type ProgressBar}">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="Background" Value="#1e293b"/>
+        <Setter Property="Foreground" Value="#0284c7"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ProgressBar}">
+                    <Border CornerRadius="3" Background="{TemplateBinding Background}" ClipToBounds="True">
+                        <Grid x:Name="PART_Track">
+                            <Border x:Name="PART_Indicator" HorizontalAlignment="Left" CornerRadius="3" Background="{TemplateBinding Foreground}"/>
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
     <CircleEase EasingMode="EaseIn" x:Key="DefaultAnimationFunction"/>
     

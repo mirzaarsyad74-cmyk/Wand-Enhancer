@@ -14,6 +14,19 @@
     <s:String x:Key="mw_copy_logs">লগ ক্লিপবোর্ডে কপি করুন</s:String>
     <s:String x:Key="mw_export_logs">লগ ফাইলে রপ্তানি করুন</s:String>
     <s:String x:Key="mw_update_badge">নতুন সংস্করণ উপলব্ধ</s:String>
+    <s:String x:Key="mw_full_auto">⚡ স্বয়ংক্রিয় মোড</s:String>
+    <s:String x:Key="mw_auto_download">⚡ স্বয়ংক্রিয় ডাউনলোড ও প্যাচ</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ ১-ক্লিকে স্বয়ংক্রিয় প্যাচ</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ মেরামত ও পুনরায় ইনস্টল</s:String>
+    <s:String x:Key="mw_terminal_clear">পরিষ্কার</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">অটো-স্ক্রোল</s:String>
+    <s:String x:Key="mw_terminal_live">লাইভ</s:String>
+    <s:String x:Key="mw_terminal_busy">ব্যস্ত</s:String>
+    <s:String x:Key="mw_uninstall">আনইনস্টল</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">এই কম্পিউটার থেকে Wand / WeMod সম্পূর্ণভাবে মুছে ফেলুন</s:String>
+    <s:String x:Key="dialog_uninstall_title">Wand / WeMod আনইনস্টল</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">আপনি কি এই কম্পিউটার থেকে Wand / WeMod সম্পূর্ণভাবে মুছে ফেলতে চান?&#x0a;&#x0a;এটি চলমান প্রক্রিয়াগুলি বন্ধ করবে, AppData থেকে সমস্ত ফাইল মুছে ফেলবে, শর্টকাট মুছবে এবং রেজিস্ট্রি পরিষ্কার করবে।</s:String>
+    <s:String x:Key="mw_scam_warning">এটি একটি ওপেন সোর্স প্রজেক্ট। এর জন্য অর্থ প্রদান করে থাকলে আপনি প্রতারিত হয়েছেন!</s:String>
 
     <s:String x:Key="settings_title">সেটিংস</s:String>
     <s:String x:Key="settings_language">ভাষা</s:String>

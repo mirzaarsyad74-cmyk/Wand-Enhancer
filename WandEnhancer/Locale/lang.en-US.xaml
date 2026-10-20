@@ -25,6 +25,10 @@
     <s:String x:Key="mw_terminal_autoscroll">Auto-Scroll</s:String>
     <s:String x:Key="mw_terminal_live">LIVE</s:String>
     <s:String x:Key="mw_terminal_busy">BUSY</s:String>
+    <s:String x:Key="mw_uninstall">Uninstall</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Completely remove Wand / WeMod from this computer</s:String>
+    <s:String x:Key="dialog_uninstall_title">Uninstall Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Are you sure you want to completely uninstall Wand / WeMod from this computer?&#x0a;&#x0a;This will terminate running processes, remove all files from AppData, delete shortcuts, and clean registry keys.</s:String>
     <s:String x:Key="mw_scam_warning">This is an open source project. If you paid for it, you probably got scammed!</s:String>
     <!--#endregion -->
 

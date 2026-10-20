@@ -148,7 +148,7 @@ namespace WandEnhancer.Core
         /// <summary>Wraps the account-returning promise so the resolved account always reports an active subscription.</summary>
         private static JsEdit[] ForceProSubscription(JsCursor js, string methodName)
         {
-            return Edits(js.FindFunction(methodName)?.WrapReturn(PatchPayload.Load("pro-subscription")));
+            return Edits(js.FindFunction(methodName)?.WrapReturn(PatchPayload.Load("pro-subscription", "avatar", AvatarAsset.DataUri)));
         }
 
         private static JsEdit[] LocateAccountReducer(JsCursor js)
@@ -163,7 +163,7 @@ namespace WandEnhancer.Core
             // ${account} is a regex back-reference, not a PatchPayload placeholder.
             return Edits(reducer.ReplaceInBody(
                 @"account:\s*(?<account>[\w$]+)",
-                PatchPayload.Load("pro-account-reducer")));
+                PatchPayload.Load("pro-account-reducer", "avatar", AvatarAsset.DataUri)));
         }
 
         private static JsEdit[] LocateUpdateHandler(JsCursor js)

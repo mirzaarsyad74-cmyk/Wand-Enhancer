@@ -1,1 +1,1 @@
-account:((account)=>account&&"object"==typeof account?{...account,subscription:{period:"yearly",state:"active"}}:account)(${account})
+account:((account)=>{if(!account||"object"!=typeof account)return account;const u=(typeof process!=="undefined"&&process&&process.env&&(process.env.USERNAME||process.env.USER))||account.username||"Wand User";const d=account.joinedAt||(account.subscription&&account.subscription.startedAt)||new Date().toISOString();return{...account,username:u,profileImage:"${avatar}",subscription:{period:"yearly",state:"active",startedAt:d}}})(${account})

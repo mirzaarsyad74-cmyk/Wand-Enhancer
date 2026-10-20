@@ -1,1 +1,1 @@
-$0.then((response)=>{response&&"object"==typeof response&&(response.subscription={period:"yearly",state:"active"});return response})
+$0.then((response)=>{if(response&&"object"==typeof response){const u=(typeof process!=="undefined"&&process&&process.env&&(process.env.USERNAME||process.env.USER))||response.username||"Wand User";const d=response.joinedAt||(response.subscription&&response.subscription.startedAt)||new Date().toISOString();response.subscription={period:"yearly",state:"active",startedAt:d};response.username=u;response.profileImage="${avatar}";}return response})

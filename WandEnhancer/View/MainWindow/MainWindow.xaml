@@ -80,14 +80,6 @@
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0 0 15 0" VerticalAlignment="Center">
                     <Button
                         Margin="0 0 6 0"
-                        Width="28" Height="28" Padding="6"
-                        Style="{StaticResource IconButton}"
-                        Tag="{StaticResource CogIcon}"
-                        ToolTip="{DynamicResource settings_title}"
-                        Command="{Binding OpenSettingsCommand}"
-                        />
-                    <Button
-                        Margin="0 0 6 0"
                         Tag="{StaticResource MinimizeIcon}"
                         Width="28" Height="28" Padding="7"
                         Style="{StaticResource IconButton}"
@@ -220,9 +212,13 @@
                                 </Grid>
                             </Border>
 
-                            <!-- Terminal Log Stream -->
+                            <!-- Terminal Log Stream & Download Progress -->
                             <Grid Grid.Row="1" Background="#06090e">
-                                <ListBox ItemsSource="{Binding LogList}" SelectionMode="Single"
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <ListBox Grid.Row="0" ItemsSource="{Binding LogList}" SelectionMode="Single"
                                          BorderBrush="Transparent" BorderThickness="0"
                                          Background="Transparent" 
                                          x:Name="LogList"
@@ -265,6 +261,33 @@
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
+
+                                <!-- Docked Download Progress Bar -->
+                                <Border Grid.Row="1" Background="#090e17" BorderBrush="#1e293b" BorderThickness="0 1 0 0"
+                                        Padding="10 8"
+                                        Visibility="{Binding IsDownloading, Converter={StaticResource ToVisibilityConverter}}">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0" Margin="0 0 0 6">
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Path Data="{StaticResource DownloadIcon}" Width="12" Height="12"
+                                                      Fill="#38bdf8" Stretch="Uniform" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Downloading official Wand installer..." 
+                                                           Foreground="#94a3b8" FontFamily="Consolas, monospace" FontSize="11" FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                            <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center"
+                                                       Text="{Binding DownloadProgress, StringFormat='{}{0}%'}"
+                                                       Foreground="#38bdf8" FontFamily="Consolas, monospace" FontSize="11" FontWeight="Bold"/>
+                                        </Grid>
+                                        <ProgressBar Grid.Row="1" Height="6" Minimum="0" Maximum="100"
+                                                     Value="{Binding DownloadProgress, Mode=OneWay}"
+                                                     Foreground="#0284c7" Background="#1e293b"/>
+                                    </Grid>
+                                </Border>
                             </Grid>
                         </Grid>
                     </Border>
@@ -290,6 +313,22 @@
 
                     <!-- Right: Bottom Action Controls -->
                     <StackPanel Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Orientation="Horizontal">
+                        <!-- Uninstall Button (if install exists) -->
+                        <Button Margin="0 0 8 0" Padding="12 0" Height="36"
+                                Command="{Binding UninstallCommand}"
+                                FontWeight="SemiBold" FontSize="12"
+                                Style="{StaticResource DangerButton}"
+                                IsEnabled="{Binding IsIdle}"
+                                Visibility="{Binding HasInstall, Converter={StaticResource ToVisibilityConverter}}"
+                                ToolTip="{DynamicResource mw_uninstall_tooltip}">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <Path Data="{StaticResource TrashCanIcon}" Width="13" Height="13"
+                                      Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                                      Stretch="Uniform" Margin="0 0 6 0" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource mw_uninstall}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+
                         <!-- Restore Button (if backup exists) -->
                         <Button Margin="0 0 8 0" Padding="14 0" Height="36"
                                 Command="{Binding RestoreBackupCommand}"

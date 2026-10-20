@@ -1,5 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,7 +26,30 @@ namespace WandEnhancer.View.MainWindow
         public WeModConfig WeModInfo
         {
             get => _weModConfig;
-            set => SetProperty(ref _weModConfig, value);
+            set
+            {
+                if (SetProperty(ref _weModConfig, value))
+                {
+                    OnPropertyChanged(nameof(HasInstall));
+                    NotifyStatusChanged();
+                }
+            }
+        }
+
+        public bool HasInstall => _weModConfig != null;
+
+        private int _downloadProgress;
+        public int DownloadProgress
+        {
+            get => _downloadProgress;
+            set => SetProperty(ref _downloadProgress, value);
+        }
+
+        private bool _isDownloading;
+        public bool IsDownloading
+        {
+            get => _isDownloading;
+            set => SetProperty(ref _isDownloading, value);
         }
 
         private void UseInstall(WeModConfig config)
@@ -34,10 +58,14 @@ namespace WandEnhancer.View.MainWindow
             NotifyStatusChanged();
             if (config == null)
             {
+                AlreadyPatched = false;
+                CanRestore = false;
+                IsPatchEnabled = false;
                 return;
             }
 
-            Log(LocalizationManager.Format("log_install_found", config, config.ExecutableName), ELogType.Success);
+            var verInfo = !string.IsNullOrEmpty(config.Version) ? $" (v{config.Version})" : "";
+            Log(LocalizationManager.Format("log_install_found", config, config.ExecutableName) + verInfo, ELogType.Success);
             AlreadyPatched = Enhancer.IsPatched(config.RootDirectory);
             CanRestore = Enhancer.HasBackup(config.RootDirectory);
             IsPatchEnabled = !AlreadyPatched;
@@ -98,6 +126,7 @@ namespace WandEnhancer.View.MainWindow
 
         private void NotifyStatusChanged()
         {
+            OnPropertyChanged(nameof(HasInstall));
             OnPropertyChanged(nameof(StatusBadgeText));
             OnPropertyChanged(nameof(StatusBadgeBackground));
             OnPropertyChanged(nameof(StatusBadgeBorder));
@@ -110,9 +139,10 @@ namespace WandEnhancer.View.MainWindow
             get
             {
                 if (IsBusy) return "⚡ Processing...";
-                if (AlreadyPatched) return "● Wand Patched · Pro Active";
-                if (WeModInfo != null) return "● Wand Detected · Ready";
-                return "● Wand Not Found · Auto-Install Ready";
+                var verStr = (WeModInfo != null && !string.IsNullOrEmpty(WeModInfo.Version)) ? $" v{WeModInfo.Version}" : "";
+                if (AlreadyPatched) return $"● Wand{verStr} · Patched";
+                if (WeModInfo != null) return $"● Wand{verStr} · Not Patched";
+                return "● Wand Not Found";
             }
         }
 
@@ -175,6 +205,7 @@ namespace WandEnhancer.View.MainWindow
         public RelayCommand ExportLogsCommand { get; }
         public RelayCommand FullAutoCommand { get; }
         public RelayCommand AutoRepairCommand { get; }
+        public RelayCommand UninstallCommand { get; }
         public RelayCommand ClearLogsCommand { get; }
         public RelayCommand ToggleAutoScrollCommand { get; }
 
@@ -251,6 +282,7 @@ namespace WandEnhancer.View.MainWindow
                         new Enhancer(WeModInfo, Log, config).Patch();
                         AlreadyPatched = true;
                         CanRestore = true;
+                        LaunchWand();
                     }
                     catch (Exception e)
                     {
@@ -308,8 +340,17 @@ namespace WandEnhancer.View.MainWindow
                     if (WeModInfo == null)
                     {
                         Log("[FULL-AUTO] Wand installation not found. Starting automatic download and installation...", ELogType.Info);
-                        var progress = new Progress<int>(pct => { });
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            DownloadProgress = 0;
+                            IsDownloading = true;
+                        });
+                        var progress = new Progress<int>(pct =>
+                        {
+                            Application.Current.Dispatcher.Invoke(() => DownloadProgress = pct);
+                        });
                         string installer = await WandManagerService.DownloadLatestWandAsync(Log, progress);
+                        Application.Current.Dispatcher.Invoke(() => IsDownloading = false);
                         var newConfig = await WandManagerService.InstallWandAsync(installer, Log);
                         Application.Current.Dispatcher.Invoke(() => UseInstall(newConfig));
                     }
@@ -332,6 +373,7 @@ namespace WandEnhancer.View.MainWindow
                     });
 
                     Log("[FULL-AUTO] ⚡ Everything is set up and ready! Enjoy Wand with Pro features.", ELogType.Success);
+                    LaunchWand();
                 }
                 catch (Exception ex)
                 {
@@ -341,6 +383,7 @@ namespace WandEnhancer.View.MainWindow
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        IsDownloading = false;
                         IsBusy = false;
                         OnPropertyChanged(nameof(AutoButtonText));
                     });
@@ -360,7 +403,16 @@ namespace WandEnhancer.View.MainWindow
                 try
                 {
                     Log("[AUTO-REPAIR] Initiating full auto-repair and reinstall sequence...", ELogType.Info);
-                    var repairedConfig = await WandManagerService.AutoRepairAsync(WeModInfo, Log);
+                    var progress = new Progress<int>(pct =>
+                    {
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            IsDownloading = true;
+                            DownloadProgress = pct;
+                        });
+                    });
+                    var repairedConfig = await WandManagerService.AutoRepairAsync(WeModInfo, Log, progress);
+                    Application.Current.Dispatcher.Invoke(() => IsDownloading = false);
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -375,10 +427,61 @@ namespace WandEnhancer.View.MainWindow
                     });
 
                     Log("[AUTO-REPAIR] ⚡ Wand successfully repaired and re-patched!", ELogType.Success);
+                    LaunchWand();
                 }
                 catch (Exception ex)
                 {
                     Log($"[AUTO-REPAIR] Repair failed: {ex.Message}", ELogType.Error);
+                }
+                finally
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IsDownloading = false;
+                        IsBusy = false;
+                        OnPropertyChanged(nameof(AutoButtonText));
+                    });
+                }
+            });
+        }
+
+        private async void OnUninstall(object param)
+        {
+            if (WeModInfo == null || IsBusy) return;
+
+            var title = LocalizationManager.Get("dialog_uninstall_title");
+            var message = LocalizationManager.Get("dialog_uninstall_confirm");
+            var result = System.Windows.MessageBox.Show(
+                message,
+                title,
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+
+            if (result != System.Windows.MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            IsBusy = true;
+            OnPropertyChanged(nameof(AutoButtonText));
+
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    Log("[UNINSTALL] Starting complete Wand/WeMod uninstallation...", ELogType.Info);
+                    bool success = await WandManagerService.UninstallWandAsync(WeModInfo, Log);
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (success)
+                        {
+                            UseInstall(null);
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Log($"[UNINSTALL] Error during uninstallation: {ex.Message}", ELogType.Error);
                 }
                 finally
                 {
@@ -448,6 +551,32 @@ namespace WandEnhancer.View.MainWindow
             Log(LocalizationManager.Format("log_open_link_failed", url), ELogType.Warn);
         }
 
+        private void LaunchWand()
+        {
+            try
+            {
+                if (WeModInfo == null || string.IsNullOrEmpty(WeModInfo.ExecutablePath) || !File.Exists(WeModInfo.ExecutablePath))
+                {
+                    Log("[LAUNCH] Wand executable not found for auto-launch.", ELogType.Warn);
+                    return;
+                }
+
+                Log($"[LAUNCH] Launching Wand ({Path.GetFileName(WeModInfo.ExecutablePath)})...", ELogType.Info);
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = WeModInfo.ExecutablePath,
+                    WorkingDirectory = Path.GetDirectoryName(WeModInfo.ExecutablePath),
+                    UseShellExecute = true
+                };
+                Process.Start(startInfo);
+                Log("[LAUNCH] 🚀 Wand launched successfully!", ELogType.Success);
+            }
+            catch (Exception ex)
+            {
+                Log($"[LAUNCH] Failed to auto-launch Wand: {ex.Message}", ELogType.Warn);
+            }
+        }
+
         public MainWindowVm(IShellView shell, IFileDialogs dialogs)
         {
             _shell = shell;
@@ -460,6 +589,7 @@ namespace WandEnhancer.View.MainWindow
             ExportLogsCommand = new RelayCommand(OnExportLogs, HasLogs);
             FullAutoCommand = new RelayCommand(OnFullAuto);
             AutoRepairCommand = new RelayCommand(OnAutoRepair);
+            UninstallCommand = new RelayCommand(OnUninstall);
             ClearLogsCommand = new RelayCommand(OnClearLogs);
             ToggleAutoScrollCommand = new RelayCommand(OnToggleAutoScroll);
 

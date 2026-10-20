@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.Win32;
 using WandEnhancer.Models;
 using WandEnhancer.Utils;
 
@@ -204,13 +207,14 @@ namespace WandEnhancer.Core.Services
             }
 
             logger("[AUTO-PATCH] Applying full enhancement package...", ELogType.Info);
-            logger("[AUTO-PATCH] Selected: Activate Pro, DevTools F12, Remote Web Panel, Static Strategy.", ELogType.Info);
+            logger("[AUTO-PATCH] Selected: Activate Pro, Disable Updates, DevTools F12, Remote Web Panel, Static Strategy.", ELogType.Info);
 
             var patchConfig = new PatchConfig
             {
                 PatchTypes = new System.Collections.Generic.HashSet<EPatchType>
                 {
                     EPatchType.ActivatePro,
+                    EPatchType.DisableUpdates,
                     EPatchType.RemoteWebPanelPreview,
                     EPatchType.DevToolsOnF12
                 },
@@ -272,6 +276,259 @@ namespace WandEnhancer.Core.Services
             foreach (var brand in Constants.WeModBrandNames)
             {
                 ProcessTerminator.TryKillProcess(brand);
+            }
+        }
+
+        /// <summary>
+        /// Completely uninstalls Wand/WeMod: stops processes, executes Squirrel uninstaller if present,
+        /// sweeps files and folders in %LOCALAPPDATA% and %APPDATA%, deletes shortcuts, and clears registry entries.
+        /// </summary>
+        public static async Task<bool> UninstallWandAsync(WeModConfig currentConfig, Action<string, ELogType> logger)
+        {
+            logger("[UNINSTALL] Starting complete Wand / WeMod uninstallation sequence...", ELogType.Info);
+
+            // 1. Terminate running processes
+            logger("[UNINSTALL] Terminating any running Wand or WeMod processes...", ELogType.Info);
+            KillAllWandProcesses();
+            await Task.Delay(1000);
+
+            // 2. Identify install directories
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            // Locate parent directory of installation (e.g., %LOCALAPPDATA%\Wand)
+            string detectedParentDir = null;
+            if (currentConfig != null && !string.IsNullOrEmpty(currentConfig.RootDirectory) && Directory.Exists(currentConfig.RootDirectory))
+            {
+                try
+                {
+                    detectedParentDir = Directory.GetParent(currentConfig.RootDirectory)?.FullName;
+                }
+                catch
+                {
+                    // Ignore directory parsing errors
+                }
+            }
+
+            // 3. Attempt Squirrel uninstaller if Update.exe is found
+            string updateExe = null;
+            if (!string.IsNullOrEmpty(detectedParentDir))
+            {
+                updateExe = Path.Combine(detectedParentDir, "Update.exe");
+            }
+            if (string.IsNullOrEmpty(updateExe) || !File.Exists(updateExe))
+            {
+                string wandUpdate = Path.Combine(localAppData, "Wand", "Update.exe");
+                string weModUpdate = Path.Combine(localAppData, "WeMod", "Update.exe");
+                if (File.Exists(wandUpdate)) updateExe = wandUpdate;
+                else if (File.Exists(weModUpdate)) updateExe = weModUpdate;
+            }
+
+            if (!string.IsNullOrEmpty(updateExe) && File.Exists(updateExe))
+            {
+                try
+                {
+                    logger($"[UNINSTALL] Invoking Squirrel uninstaller: {updateExe} --uninstall -s", ELogType.Info);
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = updateExe,
+                        Arguments = "--uninstall -s",
+                        UseShellExecute = true,
+                        CreateNoWindow = true,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    using (var proc = Process.Start(psi))
+                    {
+                        if (proc != null)
+                        {
+                            await Task.Run(() => proc.WaitForExit(15000));
+                            logger("[UNINSTALL] Squirrel uninstaller step finished.", ELogType.Info);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger($"[UNINSTALL] Squirrel uninstaller notice: {ex.Message}. Proceeding to deep clean...", ELogType.Warn);
+                }
+            }
+
+            // Ensure any spawned processes during uninstall are stopped
+            KillAllWandProcesses();
+            await Task.Delay(1000);
+
+            // 4. Deep clean local folders
+            logger("[UNINSTALL] Purging application directories...", ELogType.Info);
+            var foldersToPurge = new List<string>();
+
+            if (!string.IsNullOrEmpty(detectedParentDir) && Directory.Exists(detectedParentDir))
+            {
+                foldersToPurge.Add(detectedParentDir);
+            }
+
+            foreach (var brand in Constants.WeModBrandNames)
+            {
+                foldersToPurge.Add(Path.Combine(localAppData, brand));
+                foldersToPurge.Add(Path.Combine(appData, brand));
+            }
+
+            foreach (var folder in foldersToPurge.Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                if (Directory.Exists(folder))
+                {
+                    try
+                    {
+                        logger($"[UNINSTALL] Removing directory: {folder}", ELogType.Info);
+                        DeleteDirectorySafe(folder);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger($"[UNINSTALL] Could not fully remove {folder}: {ex.Message}", ELogType.Warn);
+                    }
+                }
+            }
+
+            // 5. Remove shortcuts
+            logger("[UNINSTALL] Cleaning desktop and start menu shortcuts...", ELogType.Info);
+            RemoveShortcuts();
+
+            // 6. Clean Registry keys
+            logger("[UNINSTALL] Removing registry uninstallation entries...", ELogType.Info);
+            RemoveRegistryKeys();
+
+            logger("[UNINSTALL] Wand / WeMod has been completely removed from your system.", ELogType.Success);
+            return true;
+        }
+
+        private static void RemoveShortcuts()
+        {
+            var shortcutDirs = new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu), "Programs"),
+                Environment.GetFolderPath(Environment.SpecialFolder.Programs)
+            };
+
+            foreach (var baseDir in shortcutDirs)
+            {
+                if (string.IsNullOrEmpty(baseDir) || !Directory.Exists(baseDir)) continue;
+
+                foreach (var brand in Constants.WeModBrandNames)
+                {
+                    DeleteFileSafe(Path.Combine(baseDir, $"{brand}.lnk"));
+
+                    string subDir = Path.Combine(baseDir, brand);
+                    if (Directory.Exists(subDir))
+                    {
+                        DeleteDirectorySafe(subDir);
+                    }
+                }
+            }
+        }
+
+        private static void RemoveRegistryKeys()
+        {
+            try
+            {
+                using (var uninstall = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall", true))
+                {
+                    if (uninstall != null)
+                    {
+                        foreach (var brand in Constants.WeModBrandNames)
+                        {
+                            try { uninstall.DeleteSubKeyTree(brand, false); } catch { }
+                        }
+                    }
+                }
+
+                using (var software = Registry.CurrentUser.OpenSubKey(@"Software", true))
+                {
+                    if (software != null)
+                    {
+                        foreach (var brand in Constants.WeModBrandNames)
+                        {
+                            try { software.DeleteSubKeyTree(brand, false); } catch { }
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Non-elevated or permission denial
+            }
+        }
+
+        /// <summary>
+        /// Recursively resets file attributes and deletes directory, with cmd rmdir fallback.
+        /// </summary>
+        public static void DeleteDirectorySafe(string dirPath)
+        {
+            if (string.IsNullOrEmpty(dirPath) || !Directory.Exists(dirPath))
+            {
+                return;
+            }
+
+            try
+            {
+                var dirInfo = new DirectoryInfo(dirPath);
+                foreach (var file in dirInfo.EnumerateFiles("*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        file.Attributes = FileAttributes.Normal;
+                        file.Delete();
+                    }
+                    catch
+                    {
+                        // Ignore individual locked files in recursive sweep
+                    }
+                }
+
+                Directory.Delete(dirPath, true);
+            }
+            catch
+            {
+                try
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c rmdir /s /q \"{dirPath}\"",
+                        CreateNoWindow = true,
+                        UseShellExecute = false,
+                        WindowStyle = ProcessWindowStyle.Hidden
+                    };
+                    using (var p = Process.Start(psi))
+                    {
+                        p?.WaitForExit(3000);
+                    }
+                }
+                catch
+                {
+                    // Ignore fallback errors
+                }
+            }
+        }
+
+        /// <summary>
+        /// Resets file attributes to Normal and deletes the file.
+        /// </summary>
+        public static void DeleteFileSafe(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return;
+            }
+
+            try
+            {
+                File.SetAttributes(filePath, FileAttributes.Normal);
+                File.Delete(filePath);
+            }
+            catch
+            {
+                // Ignore locked file
             }
         }
     }
