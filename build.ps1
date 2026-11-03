@@ -1,7 +1,7 @@
 param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Release',
-    [bool]$EnableUpdateNotifications = $true
+    [switch]$EnableUpdateNotifications
 )
 
 $ErrorActionPreference = 'Stop'

@@ -59,7 +59,7 @@ if (-not (Test-Path $changelogPath)) {
     throw "CHANGELOG.md not found: $changelogPath"
 }
 
-$changelogContent = Get-Content -Path $changelogPath -Raw
+$changelogContent = Get-Content -Path $changelogPath -Raw -Encoding utf8
 $section = Get-ChangelogSection -Content $changelogContent -TargetVersion $Version
 
 if ([string]::IsNullOrWhiteSpace($section)) {

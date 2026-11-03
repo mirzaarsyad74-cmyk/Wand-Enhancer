@@ -26,6 +26,13 @@ Whenever the user explicitly authorizes or instructs an upload/release to GitHub
    - Document new changes under `## [X.Y.Z.0] - YYYY-MM-DD`
 
 * Always run a clean local build (`build.ps1`) after bumping the version before pushing or publishing the release.
+* **Publishing GitHub Release**: To make the new release appear under GitHub Releases (`/releases`), create and push the matching git tag:
+  ```powershell
+  git tag X.Y.Z.0
+  git push origin master
+  git push origin X.Y.Z.0
+  ```
+  This triggers `.github/workflows/release.yml` on GitHub Actions, which builds the release executables (`WandEnhancer.exe`, `WandEnhancer-AutoUpdate.exe`, `WandEnhancer-Offline.exe`), validates release metadata, generates `SHA256SUMS.txt`, extracts changelog notes, and publishes the official GitHub Release.
 
 ---
 

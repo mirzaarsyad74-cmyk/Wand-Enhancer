@@ -4,15 +4,18 @@ on:
   push:
     tags:
       - '*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (optional, e.g. 2.2.1.0; defaults to version in AssemblyInfo.cs)'
+        required: false
+        type: string
 
 jobs:
   publish-release:
     runs-on: windows-latest
     permissions:
       contents: write
-
-    env:
-      RELEASE_VERSION: ${{ github.ref_name }}
 
     steps:
       - uses: actions/checkout@v5
@@ -37,30 +40,51 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      - name: Determine release version
+        id: release_version
+        shell: pwsh
+        run: |
+          $ver = '${{ inputs.tag }}'.Trim()
+          if (-not $ver) {
+            if ('${{ github.ref_type }}' -eq 'tag') {
+              $ver = '${{ github.ref_name }}'.Trim()
+            } else {
+              $assemblyInfo = Get-Content WandEnhancer/Properties/AssemblyInfo.cs -Raw
+              if ($assemblyInfo -match '\[assembly:\s*AssemblyVersion\("([^"]+)"\)\]') {
+                $ver = $matches[1]
+              } else {
+                throw "Could not determine version from AssemblyInfo.cs"
+              }
+            }
+          }
+          Write-Host "Using release version: $ver"
+          "version=$ver" >> $env:GITHUB_OUTPUT
+
       - name: Validate release metadata
         shell: pwsh
-        run: ./scripts/validate-release-metadata.ps1 -ExpectedVersion $env:RELEASE_VERSION
+        run: ./scripts/validate-release-metadata.ps1 -ExpectedVersion ${{ steps.release_version.outputs.version }}
 
       - name: Extract release notes from changelog
         shell: pwsh
-        run: ./scripts/get-changelog-section.ps1 -Version $env:RELEASE_VERSION -OutputPath release-notes.md
-
-      - name: Build standard release (offline)
-        shell: pwsh
-        run: |
-          ./build.ps1 -Configuration Release
-          Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer.exe
+        run: ./scripts/get-changelog-section.ps1 -Version ${{ steps.release_version.outputs.version }} -OutputPath release-notes.md
 
       - name: Build auto-update release
         shell: pwsh
         run: |
           ./build.ps1 -Configuration Release -EnableUpdateNotifications
+          Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer.exe
           Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer-AutoUpdate.exe
+
+      - name: Build standard release (offline)
+        shell: pwsh
+        run: |
+          ./build.ps1 -Configuration Release
+          Copy-Item WandEnhancer/bin/Release/WandEnhancer.exe ./WandEnhancer-Offline.exe
 
       - name: Generate SHA-256 checksums
         shell: pwsh
         run: |
-          Get-FileHash ./WandEnhancer.exe, ./WandEnhancer-AutoUpdate.exe -Algorithm SHA256 |
+          Get-FileHash ./WandEnhancer.exe, ./WandEnhancer-AutoUpdate.exe, ./WandEnhancer-Offline.exe -Algorithm SHA256 |
             ForEach-Object { "$($_.Hash)  $([IO.Path]::GetFileName($_.Path))" } |
             Out-File -Encoding ascii SHA256SUMS.txt
           Get-Content SHA256SUMS.txt
@@ -68,15 +92,16 @@ jobs:
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ github.ref_name }}
-          tag_name: ${{ github.ref_name }}
+          name: ${{ steps.release_version.outputs.version }}
+          tag_name: ${{ steps.release_version.outputs.version }}
           body_path: release-notes.md
           files: |
             CHANGELOG.md
             ./WandEnhancer.exe
             ./WandEnhancer-AutoUpdate.exe
+            ./WandEnhancer-Offline.exe
             SHA256SUMS.txt
           fail_on_unmatched_files: true
           # RC tags must not replace the latest stable release.
-          prerelease: ${{ contains(github.ref_name, '-') }}
-          make_latest: ${{ !contains(github.ref_name, '-') }}
+          prerelease: ${{ contains(steps.release_version.outputs.version, '-') }}
+          make_latest: ${{ !contains(steps.release_version.outputs.version, '-') }}
