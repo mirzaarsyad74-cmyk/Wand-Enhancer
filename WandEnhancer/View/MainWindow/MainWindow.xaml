@@ -12,6 +12,7 @@
         Height="570" MaxHeight="570"
         Width="900" MaxWidth="900" 
         Opacity="0.97"
+        AllowDrop="True" PreviewDragOver="OnDragOver" PreviewDrop="OnDrop"
         Background="Transparent"
         WindowStyle="None"
         FontFamily="{StaticResource Inter}"
