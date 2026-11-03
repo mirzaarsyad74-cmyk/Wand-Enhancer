@@ -788,9 +788,17 @@ namespace WandEnhancer.View.MainWindow
 
         internal void OpenUpdatePopup(UpdateNotifier.UpdateRelease update)
         {
+            if (update != null)
+            {
+                _availableUpdate = update;
+                IsUpdateAvailable = true;
+                VersionDisplay = $"v{Constants.Version} → v{update.Version}";
+                NewVersionBadgeText = $"v{update.Version}";
+            }
+
             _shell.OpenPopup(
-                new UpdatePopup(Constants.Version.ToString(), update.Version, update.Notes,
-                    update.Url, UpdateNotifier.GetFullChangelogAsync, update),
+                new UpdatePopup(Constants.Version.ToString(), update?.Version, update?.Notes,
+                    update?.Url, UpdateNotifier.GetFullChangelogAsync, update),
                 LocalizationManager.Get("up_popup_title"));
         }
 #endif
