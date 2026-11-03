@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">Поставте зірку, якщо це було корисно ;)</s:String>
     <s:String x:Key="mw_copy_logs">Скопіювати логи до буфера обміну</s:String>
     <s:String x:Key="mw_export_logs">Експортувати логи у файл</s:String>
+    <s:String x:Key="mw_update_badge">Доступна нова версія</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Повний Авто</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Авто-Завантаження та Патч</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ Авто-Патч в 1 клік</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Авто-Відновлення та Перевстановлення</s:String>
+    <s:String x:Key="mw_terminal_clear">Очистити</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Автопрокручування</s:String>
+    <s:String x:Key="mw_terminal_live">LIVE</s:String>
+    <s:String x:Key="mw_terminal_busy">ЗАЙНЯТО</s:String>
+    <s:String x:Key="mw_uninstall">Видалити</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Повністю видалити Wand / WeMod з цього комп'ютера</s:String>
+    <s:String x:Key="dialog_uninstall_title">Видалення Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Ви впевнені, що хочете повністю видалити Wand / WeMod з цього комп'ютера?&#x0a;&#x0a;Це завершить запущені процеси, видалить всі файли з AppData, видалить ярлики та очистить реєстр.</s:String>
+    <s:String x:Key="mw_open_folder">Відкрити папку встановлення у Провіднику</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">Це проект з відкритим вихідним кодом. Якщо ви заплатили за нього, вас, скоріш за все, ошукали!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Налаштування</s:String>
     <s:String x:Key="settings_language">Мова</s:String>
+    <s:String x:Key="settings_preferred_client">Клієнт завантаження</s:String>
+    <s:String x:Key="settings_check_updates">Перевіряти оновлення під час запуску</s:String>
+    <s:String x:Key="settings_check_prereleases">Також повідомляти про попередні версії</s:String>
     <s:String x:Key="settings_save">Зберегти</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Доступне оновлення</s:String>
+    <s:String x:Key="up_warning">Натисніть Авто-Оновлення, щоб автоматично завантажити та застосувати оновлення з GitHub.</s:String>
+    <s:String x:Key="up_current_version">Поточна:</s:String>
+    <s:String x:Key="up_latest_version">Остання:</s:String>
+    <s:String x:Key="up_release_notes">Примітки до випуску</s:String>
+    <s:String x:Key="up_show_more">Показати повний список змін</s:String>
+    <s:String x:Key="up_show_less">Показати примітки до випуску</s:String>
+    <s:String x:Key="up_loading_changelog">Завантаження...</s:String>
+    <s:String x:Key="up_changelog_failed">Не вдалося завантажити повний список змін.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">Примітки до випуску не опубліковані.</s:String>
+    <s:String x:Key="up_open_release">Відкрити сторінку випуску</s:String>
+    <s:String x:Key="up_auto_update">⚡ Авто-Оновлення</s:String>
+    <s:String x:Key="up_updating">Оновлення...</s:String>
+    <s:String x:Key="up_downloading_update">Завантаження останнього оновлення з GitHub...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">Активувати WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Підтримка .bat/.cmd лаунчерів ігор</s:String>
     <s:String x:Key="pv_devtools">DevTools на F12</s:String>
     <s:String x:Key="pv_disable_updates">Вимкнути оновлення</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Увімкнути віддалений доступ (бета)</s:String>

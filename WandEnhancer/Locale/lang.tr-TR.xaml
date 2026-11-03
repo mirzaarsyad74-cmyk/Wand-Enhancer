@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">Yardımcı olduysa yıldız verin ;)</s:String>
     <s:String x:Key="mw_copy_logs">Günlükleri panoya kopyala</s:String>
     <s:String x:Key="mw_export_logs">Günlükleri dosyaya aktar</s:String>
+    <s:String x:Key="mw_update_badge">Yeni sürüm mevcut</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Tam Otomatik</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Otomatik İndir ve Yamala</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ 1 Tıkla Otomatik Yama</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Otomatik Onar ve Yeniden Yükle</s:String>
+    <s:String x:Key="mw_terminal_clear">Temizle</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Otomatik Kaydır</s:String>
+    <s:String x:Key="mw_terminal_live">CANLI</s:String>
+    <s:String x:Key="mw_terminal_busy">MEŞGUL</s:String>
+    <s:String x:Key="mw_uninstall">Kaldır</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Wand / WeMod'u bu bilgisayardan tamamen kaldırın</s:String>
+    <s:String x:Key="dialog_uninstall_title">Wand / WeMod'u Kaldır</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Wand / WeMod'u bu bilgisayardan tamamen kaldırmak istediğinizden emin misiniz?&#x0a;&#x0a;Bu işlem çalışan işlemleri sonlandıracak, AppData'daki tüm dosyaları silecek, kısayolları kaldıracak ve kayıt defterini temizleyecektir.</s:String>
+    <s:String x:Key="mw_open_folder">Yükleme klasörünü Dosya Gezgini'nde aç</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">Bu açık kaynaklı bir projedir. Bunun için ödeme yaptıysanız, muhtemelen dolandırıldınız!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Ayarlar</s:String>
     <s:String x:Key="settings_language">Dil</s:String>
+    <s:String x:Key="settings_preferred_client">İndirme istemcisi</s:String>
+    <s:String x:Key="settings_check_updates">Başlangıçta güncellemeleri kontrol et</s:String>
+    <s:String x:Key="settings_check_prereleases">Ön sürümler hakkında da bildir</s:String>
     <s:String x:Key="settings_save">Kaydet</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Güncelleme mevcut</s:String>
+    <s:String x:Key="up_warning">GitHub'dan güncellemeyi otomatik olarak indirip uygulamak için Otomatik Güncelle'ye tıklayın.</s:String>
+    <s:String x:Key="up_current_version">Mevcut:</s:String>
+    <s:String x:Key="up_latest_version">En son:</s:String>
+    <s:String x:Key="up_release_notes">Sürüm notları</s:String>
+    <s:String x:Key="up_show_more">Tüm değişiklik günlüğünü göster</s:String>
+    <s:String x:Key="up_show_less">Sürüm notlarını göster</s:String>
+    <s:String x:Key="up_loading_changelog">Yükleniyor...</s:String>
+    <s:String x:Key="up_changelog_failed">Değişiklik günlüğü yüklenemedi.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">Yayınlanmış sürüm notu yok.</s:String>
+    <s:String x:Key="up_open_release">Sürüm sayfasını aç</s:String>
+    <s:String x:Key="up_auto_update">⚡ Otomatik Güncelle</s:String>
+    <s:String x:Key="up_updating">Güncelleniyor...</s:String>
+    <s:String x:Key="up_downloading_update">GitHub'dan en son güncelleme indiriliyor...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">WeMod Pro'yu Etkinleştir</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">.bat/.cmd oyun başlatıcı desteği</s:String>
     <s:String x:Key="pv_devtools">F12 ile DevTools</s:String>
     <s:String x:Key="pv_disable_updates">Güncellemeleri devre dışı bırak</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Uzaktan erişimi etkinleştir (beta)</s:String>

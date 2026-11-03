@@ -7,7 +7,8 @@ namespace WandEnhancer.Models
         ActivatePro = 1,
         DisableUpdates = 2,
         DevToolsOnF12 = 8,
-        RemoteWebPanelPreview = 16
+        RemoteWebPanelPreview = 16,
+        AllowBatchLaunchers = 32
     }
 
     public enum EPatchStrategy

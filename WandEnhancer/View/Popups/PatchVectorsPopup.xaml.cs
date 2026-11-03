@@ -81,7 +81,8 @@ namespace WandEnhancer.View.Popups
         private void OnPatchButtonClick(object sender, RoutedEventArgs e)
         {
             if (ActivateProBox.IsChecked != true && DisableUpdateBox.IsChecked != true &&
-                DevToolsHotkeyBox.IsChecked != true && RemoteWebPanelPreviewBox.IsChecked != true)
+                DevToolsHotkeyBox.IsChecked != true && RemoteWebPanelPreviewBox.IsChecked != true &&
+                AllowBatchLaunchersBox.IsChecked != true)
             {
                 return;
             }
@@ -90,6 +91,11 @@ namespace WandEnhancer.View.Popups
             if (ActivateProBox.IsChecked == true)
             {
                 result.Add(EPatchType.ActivatePro);
+            }
+
+            if (AllowBatchLaunchersBox.IsChecked == true)
+            {
+                result.Add(EPatchType.AllowBatchLaunchers);
             }
 
             if (DisableUpdateBox.IsChecked == true)

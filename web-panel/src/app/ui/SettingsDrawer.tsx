@@ -11,6 +11,7 @@ import {
 } from '@/appearance/appearance-storage';
 import type { LibraryGame } from '@/library/model/games';
 import { EConnectionStatus } from '@/remote-session/remote-session.reducer';
+import { isSoundEnabled, playToggleSound, setSoundEnabled } from '@/shared/lib/audio';
 import { cn } from '@/shared/lib/ui';
 import { Icon } from '@/shared/ui/Icon';
 import { IconButton } from '@/shared/ui/IconButton';
@@ -35,6 +36,7 @@ type SettingsDrawerProps = {
     currentGame: LibraryGame | null;
     currentTrainer: TrainerSummary | null;
     lastError: string | null;
+    advertisedUrls?: string[];
     onClose: () => void;
     onConnect: () => void;
     onDisconnect: () => void;
@@ -47,6 +49,7 @@ export const SettingsDrawer = ({
     currentGame,
     currentTrainer,
     lastError,
+    advertisedUrls = [],
     onClose,
     onConnect,
     onDisconnect,
@@ -85,6 +88,12 @@ export const SettingsDrawer = ({
 
                 <SectionHeader title={_(msg`Accent Color`)} />
                 <AccentPicker />
+
+                <SectionHeader title={_(msg`Controls & Feedback`)} />
+                <FeedbackAndControls />
+
+                <SectionHeader title={_(msg`Remote Network Access`)} />
+                <NetworkAccessPanel advertisedUrls={advertisedUrls} />
             </div>
         </div>
     );
@@ -279,6 +288,210 @@ const SectionHeader = ({ title }: { title: string }) => {
                 {title}
             </h3>
             <div className="h-px flex-1 bg-white/6" />
+        </div>
+    );
+};
+
+const FeedbackAndControls = () => {
+    const { _ } = useLingui();
+    const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
+    const [isFullscreen, setIsFullscreen] = useState(
+        () => typeof document !== 'undefined' && Boolean(document.fullscreenElement),
+    );
+
+    const toggleSound = () => {
+        const next = !soundOn;
+        setSoundOn(next);
+        setSoundEnabled(next);
+        if (next) {
+            playToggleSound(true);
+        }
+    };
+
+    const toggleFullscreen = () => {
+        if (typeof document === 'undefined') return;
+        if (!document.fullscreenElement) {
+            void document.documentElement
+                .requestFullscreen()
+                .then(() => setIsFullscreen(true))
+                .catch(() => {});
+        } else {
+            void document
+                .exitFullscreen()
+                .then(() => setIsFullscreen(false))
+                .catch(() => {});
+        }
+    };
+
+    return (
+        <div className="space-y-2">
+            <button
+                type="button"
+                className="remote-glass-control flex w-full items-center justify-between rounded-[9px] border p-2.5 text-[12px] text-(--deck-fg)"
+                onClick={toggleSound}
+            >
+                <span className="font-medium">
+                    <Trans>Audio Click Feedback</Trans>
+                </span>
+                <span
+                    className={cn(
+                        'rounded-[6px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider',
+                        soundOn
+                            ? 'bg-[color-mix(in_oklab,var(--deck-accent)_20%,transparent)] text-(--deck-accent)'
+                            : 'bg-white/5 text-(--deck-fg-4)',
+                    )}
+                >
+                    {soundOn ? _(msg`ON`) : _(msg`OFF`)}
+                </span>
+            </button>
+            <button
+                type="button"
+                className="remote-glass-control flex w-full items-center justify-between rounded-[9px] border p-2.5 text-[12px] text-(--deck-fg)"
+                onClick={toggleFullscreen}
+            >
+                <span className="font-medium">
+                    <Trans>Toggle Fullscreen</Trans>
+                </span>
+                <span className="rounded-[6px] bg-white/5 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-(--deck-fg-3)">
+                    {isFullscreen ? _(msg`Exit`) : _(msg`Enter`)}
+                </span>
+            </button>
+        </div>
+    );
+};
+
+const NetworkAccessPanel = ({ advertisedUrls }: { advertisedUrls?: string[] }) => {
+    const { _ } = useLingui();
+    const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
+
+    const urls =
+        advertisedUrls && advertisedUrls.length > 0
+            ? advertisedUrls
+            : typeof window !== 'undefined'
+              ? [`${window.location.origin}/remote/`]
+              : [];
+
+    const copyUrl = (url: string, index: number) => {
+        void navigator.clipboard.writeText(url).then(() => {
+            setCopiedIndex(index);
+            setTimeout(() => setCopiedIndex(null), 2000);
+        });
+    };
+
+    const getUrlLabel = (url: string) => {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+            return {
+                label: _(msg`This PC`),
+                badge: 'bg-white/10 text-(--deck-fg-3)',
+            };
+        }
+        if (url.includes('100.')) {
+            return {
+                label: _(msg`Tailscale (Worldwide)`),
+                badge: 'bg-[color-mix(in_oklab,var(--deck-accent)_20%,transparent)] text-(--deck-accent)',
+            };
+        }
+        if (url.includes('192.168.') || url.includes('10.') || url.includes('172.')) {
+            return {
+                label: _(msg`Home Wi-Fi`),
+                badge: 'bg-blue-500/20 text-blue-300',
+            };
+        }
+        if (url.includes('.trycloudflare.com')) {
+            return {
+                label: _(msg`Cloudflare Tunnel (Worldwide)`),
+                badge: 'bg-emerald-500/20 text-emerald-300',
+            };
+        }
+        return {
+            label: _(msg`Remote`),
+            badge: 'bg-emerald-500/20 text-emerald-300',
+        };
+    };
+
+    const [isResetting, setIsResetting] = useState(false);
+    const [resetStatus, setResetStatus] = useState<string | null>(null);
+
+    const handleResetTunnel = async () => {
+        if (isResetting) return;
+        setIsResetting(true);
+        setResetStatus(_(msg`Resetting tunnel...`));
+        try {
+            const res = await fetch('/remote/api/tunnel/reset', { method: 'POST' });
+            const data = await res.json();
+            if (data?.ok) {
+                setResetStatus(_(msg`Address changed!`));
+            } else {
+                setResetStatus(_(msg`Reset failed`));
+            }
+        } catch {
+            setResetStatus(_(msg`Reset failed`));
+        } finally {
+            setIsResetting(false);
+            setTimeout(() => setResetStatus(null), 3000);
+        }
+    };
+
+    return (
+        <div className="space-y-2">
+            {urls.map((url, i) => {
+                const info = getUrlLabel(url);
+                const isCopied = copiedIndex === i;
+                return (
+                    <div
+                        key={url}
+                        className="remote-glass-control flex items-center justify-between rounded-[9px] border p-2 text-[11px]"
+                    >
+                        <div className="min-w-0 flex-1 pr-2">
+                            <div className="mb-0.5 flex items-center gap-1.5">
+                                <span
+                                    className={cn(
+                                        'rounded px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase',
+                                        info.badge,
+                                    )}
+                                >
+                                    {info.label}
+                                </span>
+                            </div>
+                            <div className="truncate font-mono text-[11px] text-(--deck-fg-2)">
+                                {url}
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => copyUrl(url, i)}
+                            className="shrink-0 rounded-[6px] border border-white/10 bg-white/5 px-2.5 py-1 font-mono text-[10px] font-bold uppercase text-(--deck-fg-3) hover:bg-white/10 active:scale-95"
+                        >
+                            {isCopied ? _(msg`Copied!`) : _(msg`Copy`)}
+                        </button>
+                    </div>
+                );
+            })}
+            <button
+                type="button"
+                disabled={isResetting}
+                onClick={handleResetTunnel}
+                className="remote-glass-control flex w-full items-center justify-between rounded-[9px] border p-2.5 text-[12px] text-(--deck-fg) hover:border-white/20 active:scale-[0.99] disabled:opacity-60"
+            >
+                <div className="flex items-center gap-2">
+                    <Icon
+                        name="loader"
+                        className={cn('size-3.5 shrink-0', isResetting && 'animate-spin')}
+                    />
+                    <span className="font-medium">
+                        <Trans>Reset Tunnel Address</Trans>
+                    </span>
+                </div>
+                <span className="font-mono text-[10.5px] text-(--deck-accent)">
+                    {resetStatus || _(msg`Generate New`)}
+                </span>
+            </button>
+            <p className="mt-1 text-[11px] leading-relaxed text-(--deck-fg-4)">
+                <Trans>
+                    Connect mobile devices anywhere in the world zero-config via Cloudflare Tunnel
+                    or Tailscale, or on your local Wi-Fi.
+                </Trans>
+            </p>
         </div>
     );
 };

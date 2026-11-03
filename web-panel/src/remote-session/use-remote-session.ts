@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react';
 
+import { playToggleSound } from '@/shared/lib/audio';
 import type { CheatSchema, InstalledAppSummary } from '../../protocol/messages';
 import { normalizeCheatValue } from '../trainer/model/values';
 import { RemoteSessionClient } from './remote-session.client';
@@ -135,6 +136,7 @@ export function useRemoteSession() {
         }
 
         dispatch({ type: 'writeStarted', target: cheat.target, value, requestId });
+        playToggleSound(Boolean(value));
         return true;
     }, []);
 

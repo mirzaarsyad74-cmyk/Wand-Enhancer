@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">Pon una estrella si te fue útil ;)</s:String>
     <s:String x:Key="mw_copy_logs">Copiar registros al portapapeles</s:String>
     <s:String x:Key="mw_export_logs">Exportar registros a un archivo</s:String>
+    <s:String x:Key="mw_update_badge">Nueva versión disponible</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Totalmente Automático</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Descarga y Parche Automático</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ Auto-Parche en 1 Clic</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Auto-Reparación y Reinstalación</s:String>
+    <s:String x:Key="mw_terminal_clear">Limpiar</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Desplazamiento automático</s:String>
+    <s:String x:Key="mw_terminal_live">EN VIVO</s:String>
+    <s:String x:Key="mw_terminal_busy">OCUPADO</s:String>
+    <s:String x:Key="mw_uninstall">Desinstalar</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Eliminar completamente Wand / WeMod de este equipo</s:String>
+    <s:String x:Key="dialog_uninstall_title">Desinstalar Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">¿Estás seguro de que deseas desinstalar completamente Wand / WeMod de este equipo?&#x0a;&#x0a;Esto finalizará los procesos en ejecución, eliminará todos los archivos de AppData, borrará los accesos directos y limpiará el registro.</s:String>
+    <s:String x:Key="mw_open_folder">Abrir carpeta de instalación en el Explorador</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">¡Este es un proyecto de código abierto. Si pagaste por él, probablemente fuiste estafado!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Configuración</s:String>
     <s:String x:Key="settings_language">Idioma</s:String>
+    <s:String x:Key="settings_preferred_client">Cliente de descarga</s:String>
+    <s:String x:Key="settings_check_updates">Buscar actualizaciones al iniciar</s:String>
+    <s:String x:Key="settings_check_prereleases">Notificar también sobre versiones preliminares</s:String>
     <s:String x:Key="settings_save">Guardar</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Actualización disponible</s:String>
+    <s:String x:Key="up_warning">Haz clic en Auto Actualizar para descargar y aplicar la actualización desde GitHub.</s:String>
+    <s:String x:Key="up_current_version">Actual:</s:String>
+    <s:String x:Key="up_latest_version">Última:</s:String>
+    <s:String x:Key="up_release_notes">Notas de la versión</s:String>
+    <s:String x:Key="up_show_more">Mostrar registro de cambios completo</s:String>
+    <s:String x:Key="up_show_less">Mostrar notas de la versión</s:String>
+    <s:String x:Key="up_loading_changelog">Cargando...</s:String>
+    <s:String x:Key="up_changelog_failed">No se pudo cargar el registro completo.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">No se publicaron notas de la versión.</s:String>
+    <s:String x:Key="up_open_release">Abrir página de la versión</s:String>
+    <s:String x:Key="up_auto_update">⚡ Actualización automática</s:String>
+    <s:String x:Key="up_updating">Actualizando...</s:String>
+    <s:String x:Key="up_downloading_update">Descargando última actualización desde GitHub...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">Activar WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Soporte para lanzadores de juegos .bat/.cmd</s:String>
     <s:String x:Key="pv_devtools">DevTools en F12</s:String>
     <s:String x:Key="pv_disable_updates">Desactivar actualizaciones</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Habilitar acceso remoto (beta)</s:String>

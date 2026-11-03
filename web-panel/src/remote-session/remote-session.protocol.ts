@@ -13,7 +13,12 @@ export function protocolAction(message: IncomingMessage): RemoteSessionAction | 
                     message: `Protocol mismatch: bridge=${message.payload.protocolVersion}, panel=${PROTOCOL_VERSION}.`,
                 };
             }
-            return { type: 'connected' };
+            return {
+                type: 'connected',
+                ...(message.payload.advertisedUrls
+                    ? { advertisedUrls: message.payload.advertisedUrls }
+                    : {}),
+            };
         case 'trainer_meta':
             return { type: 'trainerMeta', payload: message.payload };
         case 'game_status':

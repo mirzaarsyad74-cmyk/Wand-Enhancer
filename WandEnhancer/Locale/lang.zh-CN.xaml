@@ -16,16 +16,34 @@
     <s:String x:Key="mw_star_hint">如果这对您有帮助，请给个星标 ;)</s:String>
     <s:String x:Key="mw_copy_logs">复制日志到剪贴板</s:String>
     <s:String x:Key="mw_export_logs">将日志导出到文件</s:String>
+    <s:String x:Key="mw_full_auto">⚡ 全自动</s:String>
+    <s:String x:Key="mw_auto_download">⚡ 自动下载并增强</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ 一键自动增强</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ 自动修复并重装</s:String>
+    <s:String x:Key="mw_terminal_clear">清空</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">自动滚屏</s:String>
+    <s:String x:Key="mw_terminal_live">实时</s:String>
+    <s:String x:Key="mw_terminal_busy">忙碌</s:String>
+    <s:String x:Key="mw_uninstall">卸载</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">从此计算机上彻底删除 Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_title">卸载 Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">您确定要从此计算机上彻底删除 Wand / WeMod 吗？&#x0a;&#x0a;此操作将终止运行中的进程，删除 AppData 中的所有文件，删除快捷方式并清理注册表项。</s:String>
+    <s:String x:Key="mw_open_folder">在文件资源管理器中打开安装文件夹</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">这是一个开源项目。如果您为此付费，您可能被骗了！</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">设置</s:String>
     <s:String x:Key="settings_language">语言</s:String>
+    <s:String x:Key="settings_preferred_client">下载客户端</s:String>
     <s:String x:Key="settings_save">保存</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">激活 WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">支持 .bat/.cmd 游戏启动器</s:String>
     <s:String x:Key="pv_devtools">按 F12 打开开发者工具</s:String>
     <s:String x:Key="pv_disable_updates">禁用更新</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">启用远程访问（beta）</s:String>

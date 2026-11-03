@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">Mettez une étoile si cela vous a aidé ;)</s:String>
     <s:String x:Key="mw_copy_logs">Copier les logs dans le presse-papiers</s:String>
     <s:String x:Key="mw_export_logs">Exporter les logs dans un fichier</s:String>
+    <s:String x:Key="mw_update_badge">Nouvelle version disponible</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Tout Automatique</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Téléchargement et Patch Auto</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ Auto-Patch en 1 Clic</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Réparation et Réinstallation Auto</s:String>
+    <s:String x:Key="mw_terminal_clear">Effacer</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Défilement auto</s:String>
+    <s:String x:Key="mw_terminal_live">EN DIRECT</s:String>
+    <s:String x:Key="mw_terminal_busy">OCCUPÉ</s:String>
+    <s:String x:Key="mw_uninstall">Désinstaller</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Supprimer complètement Wand / WeMod de cet ordinateur</s:String>
+    <s:String x:Key="dialog_uninstall_title">Désinstaller Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Êtes-vous sûr de vouloir désinstaller complètement Wand / WeMod de cet ordinateur ?&#x0a;&#x0a;Cela arrêtera les processus en cours, supprimera tous les fichiers d'AppData, supprimera les raccourcis et nettoiera le registre.</s:String>
+    <s:String x:Key="mw_open_folder">Ouvrir le dossier d'installation dans l'Explorateur</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">Ceci est un projet open source. Si vous avez payé pour cela, vous avez probablement été arnaqué !</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Paramètres</s:String>
     <s:String x:Key="settings_language">Langue</s:String>
+    <s:String x:Key="settings_preferred_client">Client de téléchargement</s:String>
+    <s:String x:Key="settings_check_updates">Vérifier les mises à jour au démarrage</s:String>
+    <s:String x:Key="settings_check_prereleases">Notifier également pour les pré-versions</s:String>
     <s:String x:Key="settings_save">Enregistrer</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Mise à jour disponible</s:String>
+    <s:String x:Key="up_warning">Cliquez sur Mise à jour auto pour télécharger et appliquer la mise à jour depuis GitHub.</s:String>
+    <s:String x:Key="up_current_version">Actuelle :</s:String>
+    <s:String x:Key="up_latest_version">Dernière :</s:String>
+    <s:String x:Key="up_release_notes">Notes de version</s:String>
+    <s:String x:Key="up_show_more">Afficher le journal des modifications complet</s:String>
+    <s:String x:Key="up_show_less">Afficher les notes de version</s:String>
+    <s:String x:Key="up_loading_changelog">Chargement...</s:String>
+    <s:String x:Key="up_changelog_failed">Impossible de charger le journal complet.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">Aucune note de version n'a été publiée.</s:String>
+    <s:String x:Key="up_open_release">Ouvrir la page de publication</s:String>
+    <s:String x:Key="up_auto_update">⚡ Mise à jour auto</s:String>
+    <s:String x:Key="up_updating">Mise à jour...</s:String>
+    <s:String x:Key="up_downloading_update">Téléchargement de la mise à jour depuis GitHub...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">Activer WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Prise en charge des lanceurs .bat/.cmd</s:String>
     <s:String x:Key="pv_devtools">DevTools sur F12</s:String>
     <s:String x:Key="pv_disable_updates">Désactiver les mises à jour</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Activer l'accès à distance (bêta)</s:String>

@@ -1,0 +1,100 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+
+    <!--#region Language Metadata -->
+    <s:String x:Key="language_display_name">Bahasa Melayu</s:String>
+    <!--#endregion -->
+
+    <!--#region MainWindow -->
+    <s:String x:Key="mw_folder_path">Laluan folder</s:String>
+    <s:String x:Key="mw_folder_not_found">Folder tidak dijumpai</s:String>
+    <s:String x:Key="mw_patch">Pertingkat</s:String>
+    <s:String x:Key="mw_restore">Pulihkan</s:String>
+    <s:String x:Key="mw_source_code">Kod sumber</s:String>
+    <s:String x:Key="mw_made_by">Dihasilkan dengan ❤️ oleh k1tbyte</s:String>
+    <s:String x:Key="mw_star_hint">Berikan bintang jika ini membantu anda ;)</s:String>
+    <s:String x:Key="mw_copy_logs">Salin log ke papan keratan</s:String>
+    <s:String x:Key="mw_export_logs">Eksport log ke fail</s:String>
+    <s:String x:Key="mw_update_badge">Versi baharu tersedia</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Automatik Penuh</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Muat Turun &amp; Tampal Auto</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ 1-Klik Tampalan Auto</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Auto Baiki &amp; Pasang Semula</s:String>
+    <s:String x:Key="mw_terminal_clear">Kosongkan</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Skrol Auto</s:String>
+    <s:String x:Key="mw_terminal_live">LANGSUNG</s:String>
+    <s:String x:Key="mw_terminal_busy">SIBUK</s:String>
+    <s:String x:Key="mw_uninstall">Nyahpasang</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Buang Wand / WeMod sepenuhnya daripada komputer ini</s:String>
+    <s:String x:Key="dialog_uninstall_title">Nyahpasang Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Adakah anda pasti ingin menyahpasang Wand / WeMod sepenuhnya daripada komputer ini?&#x0a;&#x0a;Tindakan ini akan menghentikan proses yang sedang berjalan, memadamkan semua fail dari AppData, memadamkan pintasan, dan membersihkan kunci pendaftaran.</s:String>
+    <s:String x:Key="mw_open_folder">Buka folder pemasangan dalam Explorer</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">Ini adalah projek sumber terbuka. Jika anda membayarnya, anda mungkin telah ditipu!</s:String>
+    <!--#endregion -->
+
+    <!--#region Settings -->
+    <s:String x:Key="settings_title">Tetapan</s:String>
+    <s:String x:Key="settings_language">Bahasa</s:String>
+    <s:String x:Key="settings_preferred_client">Klien muat turun</s:String>
+    <s:String x:Key="settings_check_updates">Semak kemas kini semasa permulaan</s:String>
+    <s:String x:Key="settings_check_prereleases">Maklumkan juga tentang versi pra-pelepasan</s:String>
+    <s:String x:Key="settings_save">Simpan</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Kemas kini tersedia</s:String>
+    <s:String x:Key="up_warning">Klik Kemas Kini Auto untuk memuat turun dan menggunakan kemas kini secara automatik daripada GitHub.</s:String>
+    <s:String x:Key="up_current_version">Semasa:</s:String>
+    <s:String x:Key="up_latest_version">Terkini:</s:String>
+    <s:String x:Key="up_release_notes">Nota pelepasan</s:String>
+    <s:String x:Key="up_show_more">Tunjukkan log perubahan penuh</s:String>
+    <s:String x:Key="up_show_less">Tunjukkan nota pelepasan</s:String>
+    <s:String x:Key="up_loading_changelog">Memuatkan...</s:String>
+    <s:String x:Key="up_changelog_failed">Tidak dapat memuatkan log perubahan penuh.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">Tiada nota pelepasan diterbitkan.</s:String>
+    <s:String x:Key="up_open_release">Buka halaman pelepasan</s:String>
+    <s:String x:Key="up_auto_update">⚡ Kemas Kini Auto</s:String>
+    <s:String x:Key="up_updating">Mengemas kini...</s:String>
+    <s:String x:Key="up_downloading_update">Memuat turun kemas kini terkini daripada GitHub...</s:String>
+    <!--#endregion -->
+
+    <!--#region EnhanceVectorsPopup -->
+    <s:String x:Key="pv_activate_pro">Aktifkan WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Sokongan pelancar permainan .bat/.cmd</s:String>
+    <s:String x:Key="pv_devtools">DevTools pada F12</s:String>
+    <s:String x:Key="pv_disable_updates">Lumpuhkan kemas kini</s:String>
+    <s:String x:Key="pv_remote_web_panel_preview">Dayakan akses jauh (beta)</s:String>
+    <s:String x:Key="pv_custom_scripts">Skrip tersuai</s:String>
+    <s:String x:Key="pv_add_js_scripts">Tambah .js</s:String>
+    <s:String x:Key="pv_custom_scripts_hint">Fail .js yang dipilih akan dimampatkan ke dalam Wand dan dimuatkan dalam pemapar.</s:String>
+    <s:String x:Key="pv_no_custom_scripts">Tiada skrip dipilih</s:String>
+    <s:String x:Key="pv_start">Mula</s:String>
+    <s:String x:Key="pv_auto_apply">Gunakan secara automatik selepas kemas kini</s:String>
+    <s:String x:Key="pv_popup_title">Apakah yang hendak dipertingkatkan?</s:String>
+    <s:String x:Key="pv_patch_method">Kaedah tampalan</s:String>
+    <s:String x:Key="pv_strategy_static">Statik (disyorkan)</s:String>
+    <s:String x:Key="pv_strategy_supervised">Dipantau (masa larian)</s:String>
+    <s:String x:Key="pv_strategy_hint">Statik mengubah suai Wand pada cakera, yang membatalkan tandatangan digitalnya. Dipantau menampal dalam memori pada setiap pelancaran - ini mungkin mencetuskan amaran antivirus dan mungkin tidak berfungsi pada setiap tetapan.</s:String>
+    <!--#endregion -->
+
+    <!--#region Runtime log -->
+    <s:String x:Key="log_install_found">Direktori WeMod dijumpai di {0} ({1})</s:String>
+    <s:String x:Key="log_already_patched">WeMod telah ditampal. Jika anda ingin menampal semula, sila pulihkan sandaran terlebih dahulu.</s:String>
+    <s:String x:Key="log_ready">Sedia untuk ditampal.</s:String>
+    <s:String x:Key="log_install_not_found">Direktori WeMod tidak dijumpai.</s:String>
+    <s:String x:Key="log_no_directory">Tidak dapat dilaksanakan. Sila nyatakan direktori terlebih dahulu.</s:String>
+    <s:String x:Key="log_invalid_directory">Folder yang dipilih {0} bukan direktori WeMod yang sah.</s:String>
+    <s:String x:Key="log_restore_failed">Gagal memulihkan sandaran: {0}</s:String>
+    <s:String x:Key="log_patch_failed">Gagal menampal: {0}</s:String>
+    <s:String x:Key="log_copied">Log disalin ke papan keratan.</s:String>
+    <s:String x:Key="log_copy_failed">Gagal menyalin log: {0}</s:String>
+    <s:String x:Key="log_exported">Log dieksport ke {0}.</s:String>
+    <s:String x:Key="log_export_failed">Gagal mengeksport log: {0}</s:String>
+    <s:String x:Key="log_open_link_failed">Tidak dapat membuka {0} dalam pelayar.</s:String>
+    <s:String x:Key="dialog_pick_install">Pilih direktori WeMod</s:String>
+    <!--#endregion -->
+
+</ResourceDictionary>

@@ -26,10 +26,14 @@
     <s:String x:Key="mw_uninstall_tooltip">এই কম্পিউটার থেকে Wand / WeMod সম্পূর্ণভাবে মুছে ফেলুন</s:String>
     <s:String x:Key="dialog_uninstall_title">Wand / WeMod আনইনস্টল</s:String>
     <s:String x:Key="dialog_uninstall_confirm">আপনি কি এই কম্পিউটার থেকে Wand / WeMod সম্পূর্ণভাবে মুছে ফেলতে চান?&#x0a;&#x0a;এটি চলমান প্রক্রিয়াগুলি বন্ধ করবে, AppData থেকে সমস্ত ফাইল মুছে ফেলবে, শর্টকাট মুছবে এবং রেজিস্ট্রি পরিষ্কার করবে।</s:String>
+    <s:String x:Key="mw_open_folder">ফাইল এক্সপ্লোরারে ইনস্টলেশন ফোল্ডার খুলুন</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
     <s:String x:Key="mw_scam_warning">এটি একটি ওপেন সোর্স প্রজেক্ট। এর জন্য অর্থ প্রদান করে থাকলে আপনি প্রতারিত হয়েছেন!</s:String>
 
     <s:String x:Key="settings_title">সেটিংস</s:String>
     <s:String x:Key="settings_language">ভাষা</s:String>
+    <s:String x:Key="settings_preferred_client">ডাউনলোড ক্লায়েন্ট</s:String>
     <s:String x:Key="settings_check_updates">শুরুতে আপডেট পরীক্ষা করুন</s:String>
     <s:String x:Key="settings_check_prereleases">প্রি-রিলিজ সম্পর্কেও জানান</s:String>
     <s:String x:Key="settings_save">সংরক্ষণ করুন</s:String>
@@ -47,6 +51,7 @@
     <s:String x:Key="up_open_release">রিলিজ পৃষ্ঠা খুলুন</s:String>
 
     <s:String x:Key="pv_activate_pro">WeMod Pro সক্রিয় করুন</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">.bat/.cmd গেম লঞ্চার সমর্থন</s:String>
     <s:String x:Key="pv_devtools">F12-এ DevTools</s:String>
     <s:String x:Key="pv_disable_updates">আপডেট বন্ধ করুন</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">রিমোট অ্যাক্সেস চালু করুন (বিটা)</s:String>

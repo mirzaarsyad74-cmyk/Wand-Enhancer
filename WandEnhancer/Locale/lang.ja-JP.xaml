@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">役に立ったらスターをつけてください ;)</s:String>
     <s:String x:Key="mw_copy_logs">ログをクリップボードにコピー</s:String>
     <s:String x:Key="mw_export_logs">ログをファイルにエクスポート</s:String>
+    <s:String x:Key="mw_update_badge">新しいバージョンが利用可能</s:String>
+    <s:String x:Key="mw_full_auto">⚡ フルオート</s:String>
+    <s:String x:Key="mw_auto_download">⚡ 自動ダウンロード＆パッチ</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ 1クリック自動パッチ</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ 自動修復＆再インストール</s:String>
+    <s:String x:Key="mw_terminal_clear">クリア</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">自動スクロール</s:String>
+    <s:String x:Key="mw_terminal_live">LIVE</s:String>
+    <s:String x:Key="mw_terminal_busy">処理中</s:String>
+    <s:String x:Key="mw_uninstall">アンインストール</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">このPCからWand / WeModを完全に削除します</s:String>
+    <s:String x:Key="dialog_uninstall_title">Wand / WeMod のアンインストール</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">このPCからWand / WeModを完全にアンインストールしますか？&#x0a;&#x0a;実行中のプロセスを停止し、AppDataの全ファイルを削除し、ショートカットとレジストリを削除します。</s:String>
+    <s:String x:Key="mw_open_folder">エクスプローラーでインストールフォルダを開く</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">これはオープンソースプロジェクトです。もし購入した場合は詐欺の可能性があります！</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">設定</s:String>
     <s:String x:Key="settings_language">言語</s:String>
+    <s:String x:Key="settings_preferred_client">ダウンロードクライアント</s:String>
+    <s:String x:Key="settings_check_updates">起動時に更新を確認</s:String>
+    <s:String x:Key="settings_check_prereleases">プレリリース版も通知</s:String>
     <s:String x:Key="settings_save">保存</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">アップデートがあります</s:String>
+    <s:String x:Key="up_warning">自動更新をクリックすると、GitHubから自動的に最新版をダウンロードして適用します。</s:String>
+    <s:String x:Key="up_current_version">現在：</s:String>
+    <s:String x:Key="up_latest_version">最新：</s:String>
+    <s:String x:Key="up_release_notes">リリースノート</s:String>
+    <s:String x:Key="up_show_more">変更履歴をすべて表示</s:String>
+    <s:String x:Key="up_show_less">リリースノートを表示</s:String>
+    <s:String x:Key="up_loading_changelog">読み込み中...</s:String>
+    <s:String x:Key="up_changelog_failed">変更履歴を読み込めませんでした。</s:String>
+    <s:String x:Key="up_release_notes_unavailable">リリースノートはありません。</s:String>
+    <s:String x:Key="up_open_release">リリースページを開く</s:String>
+    <s:String x:Key="up_auto_update">⚡ 自動更新</s:String>
+    <s:String x:Key="up_updating">更新中...</s:String>
+    <s:String x:Key="up_downloading_update">GitHubから最新版をダウンロード中...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">WeMod Pro を有効化</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">.bat/.cmd ゲームランチャーのサポート</s:String>
     <s:String x:Key="pv_devtools">F12でDevTools</s:String>
     <s:String x:Key="pv_disable_updates">アップデートを無効化</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">リモートアクセスを有効化（ベータ）</s:String>

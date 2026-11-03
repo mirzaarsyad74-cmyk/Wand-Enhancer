@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -120,20 +120,40 @@ namespace WandEnhancer.Utils
                    && string.Equals(Path.GetExtension(path), JavaScriptFileExtension, StringComparison.OrdinalIgnoreCase);
         }
 
+        private static Version ParseAppFolderVersion(string name)
+        {
+            if (string.IsNullOrEmpty(name) || !name.StartsWith("app-", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string verStr = name.Substring(4).Trim();
+            int dashIndex = verStr.IndexOf('-');
+            if (dashIndex >= 0)
+            {
+                verStr = verStr.Substring(0, dashIndex);
+            }
+
+            Version.TryParse(verStr, out var v);
+            return v;
+        }
+
         public static WeModConfig FindLatestWeMod(string root)
         {
             var appFolders = Directory.EnumerateDirectories(root)
                 .Select(folderPath => new DirectoryInfo(folderPath))
-                .Where(dirInfo => Regex.IsMatch(dirInfo.Name, @"^app-\w+"))
+                .Where(dirInfo => Regex.IsMatch(dirInfo.Name, @"^app-", RegexOptions.IgnoreCase))
                 .Select(dirInfo => new
                 {
                     Name = dirInfo.Name,
                     Path = dirInfo.FullName,
+                    Version = ParseAppFolderVersion(dirInfo.Name),
                     LastModified = dirInfo.LastWriteTime
                 })
-                .OrderByDescending(item => item.LastModified)
+                .OrderByDescending(item => item.Version != null)
+                .ThenByDescending(item => item.Version)
+                .ThenByDescending(item => item.LastModified)
                 .ToList();
-            
 
             return appFolders
                 .Select(folder => CheckWeModPath(folder.Path))

@@ -19,7 +19,7 @@ export const TopBar = ({ status, currentGame, runningTrainer, onOpenSettings }: 
 
     return (
         <header className="remote-glass-header sticky top-0 z-20 border-b px-3.5 pb-2.5 pt-3">
-            <div className="flex items-center gap-2.5">
+            <div className="mx-auto flex max-w-4xl items-center gap-2.5">
                 <IconButton
                     size="lg"
                     shrink

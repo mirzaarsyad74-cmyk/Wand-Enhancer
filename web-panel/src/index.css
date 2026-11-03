@@ -67,10 +67,14 @@
 
     body {
         @apply min-h-svh bg-background text-foreground antialiased;
+        overflow-x: hidden;
+        overscroll-behavior-x: none;
     }
 
     html {
         @apply font-sans;
+        overflow-x: hidden;
+        overscroll-behavior-x: none;
     }
 }
 
@@ -141,7 +145,6 @@
             0 30px 80px rgba(0, 0, 0, 0.46);
         -webkit-backdrop-filter: blur(22px) saturate(155%);
         backdrop-filter: blur(22px) saturate(155%);
-        transform: translateZ(0);
         contain: layout paint style;
         backface-visibility: hidden;
     }

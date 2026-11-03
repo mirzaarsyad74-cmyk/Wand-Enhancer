@@ -106,6 +106,7 @@ export function useRemotePanel() {
             connect: session.connect,
             disconnect: session.disconnect,
             setWsUrl: session.setWsUrl,
+            advertisedUrls: session.state.advertisedUrls,
         },
         trainer: {
             activeTrainer,

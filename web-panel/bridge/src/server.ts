@@ -7,6 +7,7 @@ const {
     DEFAULT_REMOTE_HOST,
     DEFAULT_REMOTE_PORT,
     DEV_SERVER_PORTS,
+    IPC_CHANNEL,
     PORT_SCAN_RANGE,
     REMOTE_BASE_PATH,
     REMOTE_HEALTH_PATH,
@@ -18,6 +19,8 @@ const { normalizeRemoteCommandAction, normalizeRemoteCommandResult } = require('
 const { createBridgeState } = require('./bridge-state');
 const { validateClientMessage, validateSetValueTarget } = require('./protocol-router');
 const { getAdvertisedUrls, resolveInsideRoot, serveFile } = require('./server-files');
+const { resolveSteamArtwork } = require('./steam-artwork');
+const { createTunnelManager } = require('./tunnel-manager');
 const { cloneValue, isValidPort, safeString, toStringId } = require('./utils');
 const {
     closeClient,
@@ -92,10 +95,53 @@ function createBridgeServer(options: BridgeOptions = {}) {
         }),
     });
 
+    const shouldStartTunnel =
+        options.enableTunnel !== false && !process.env.VITEST && process.env.NODE_ENV !== 'test';
+
+    const tunnelManager = createTunnelManager({
+        port: () => port,
+        log,
+        onUrlChanged: (tunnelUrl: string) => {
+            if (tunnelUrl) {
+                globalThis.__wandRemoteBridgeUrl = tunnelUrl;
+                if (!advertisedUrls.includes(tunnelUrl)) {
+                    advertisedUrls.unshift(tunnelUrl);
+                }
+                const boundRenderers = globalThis.__wandRemoteBridgeBoundRenderers;
+                if (boundRenderers) {
+                    for (const sender of boundRenderers) {
+                        try {
+                            if (sender && !sender.isDestroyed?.()) {
+                                sender.send(IPC_CHANNEL.URL_CHANGED, tunnelUrl);
+                            }
+                        } catch (_) {}
+                    }
+                }
+                for (const client of clients) {
+                    if (client.handshaken) {
+                        sendJson(client, 'hello_ack', {
+                            sessionId: `sess_${Date.now()}`,
+                            accepted: true,
+                            serverVersion: BRIDGE_SERVER_VERSION,
+                            protocolVersion: BRIDGE_PROTOCOL_VERSION,
+                            remoteUrl: tunnelUrl,
+                            advertisedUrls,
+                        });
+                    }
+                }
+            }
+        },
+    });
+
     function setAdvertisedPort(nextPort: number) {
         port = nextPort;
         advertisedUrls = getAdvertisedUrls(port);
+        const tunnelUrl = tunnelManager.getUrl();
+        if (tunnelUrl && !advertisedUrls.includes(tunnelUrl)) {
+            advertisedUrls.unshift(tunnelUrl);
+        }
         globalThis.__wandRemoteBridgeUrl =
+            tunnelUrl ||
             advertisedUrls.find((entry: string) => !entry.includes('localhost')) ||
             advertisedUrls[0];
     }
@@ -136,6 +182,65 @@ function createBridgeServer(options: BridgeOptions = {}) {
         if (url.pathname === REMOTE_HEALTH_PATH) {
             response.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
             response.end(JSON.stringify(bridgeState.buildHealthPayload()));
+            return;
+        }
+
+        if (url.pathname === '/remote/api/steam-artwork') {
+            const appId = url.searchParams.get('appId');
+            const title = url.searchParams.get('title');
+            void resolveSteamArtwork(appId, title)
+                .then((artworkUrl: string | null) => {
+                    if (artworkUrl) {
+                        response.writeHead(302, {
+                            Location: artworkUrl,
+                            'Cache-Control': 'public, max-age=86400',
+                        });
+                        response.end();
+                    } else {
+                        response.writeHead(HTTP_NOT_FOUND, {
+                            'Content-Type': 'text/plain; charset=utf-8',
+                        });
+                        response.end('Artwork not found');
+                    }
+                })
+                .catch(() => {
+                    response.writeHead(HTTP_NOT_FOUND, {
+                        'Content-Type': 'text/plain; charset=utf-8',
+                    });
+                    response.end('Artwork resolution failed');
+                });
+            return;
+        }
+
+        if (url.pathname === '/remote/api/tunnel/status') {
+            response.writeHead(200, {
+                'Content-Type': 'application/json; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+            });
+            response.end(JSON.stringify(tunnelManager.getStatus()));
+            return;
+        }
+
+        if (
+            url.pathname === '/remote/api/tunnel/reset' &&
+            (request.method === 'POST' || request.method === 'GET')
+        ) {
+            void tunnelManager
+                .reset()
+                .then((newUrl: string | null) => {
+                    response.writeHead(200, {
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Access-Control-Allow-Origin': '*',
+                    });
+                    response.end(JSON.stringify({ ok: true, url: newUrl }));
+                })
+                .catch((err: Error) => {
+                    response.writeHead(500, {
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Access-Control-Allow-Origin': '*',
+                    });
+                    response.end(JSON.stringify({ ok: false, error: err?.message || String(err) }));
+                });
             return;
         }
 
@@ -499,6 +604,9 @@ function createBridgeServer(options: BridgeOptions = {}) {
     server.on('listening', () => {
         listening = true;
         log('info', `Listening on ${host}:${port}.`);
+        if (shouldStartTunnel) {
+            void tunnelManager.start();
+        }
     });
 
     listen(port);
@@ -516,7 +624,13 @@ function createBridgeServer(options: BridgeOptions = {}) {
         get remoteUrl() {
             return globalThis.__wandRemoteBridgeUrl;
         },
+        get tunnelUrl() {
+            return tunnelManager.getUrl();
+        },
+        resetTunnel: () => tunnelManager.reset(),
+        getTunnelStatus: () => tunnelManager.getStatus(),
         close() {
+            tunnelManager.stop();
             for (const client of clients) {
                 closeClient(client);
             }
@@ -564,7 +678,8 @@ function isAllowedWebSocketOrigin(origin: string | undefined, host: string | und
         const compatibleLoopback = isLoopback(parsed.hostname) && isLoopback(requested.hostname);
         return (
             parsed.host.toLowerCase() === host.toLowerCase() ||
-            (DEV_SERVER_PORTS.includes(parsed.port) && (sameHostname || compatibleLoopback))
+            (DEV_SERVER_PORTS.includes(parsed.port) && (sameHostname || compatibleLoopback)) ||
+            parsed.hostname.endsWith('.trycloudflare.com')
         );
     } catch {
         return false;

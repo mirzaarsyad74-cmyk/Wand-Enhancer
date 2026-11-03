@@ -103,3 +103,33 @@ export class RemoteClient {
         this.#syncState();
     }
 }
+
+export class CustomInstallationSelector {
+    selectInstallation(dialog) {
+        const title = "custom_installation_selector.select_your_game_exe";
+        return dialog.showOpenDialog({
+            properties: ["openFile"],
+            filters: [{ name: "Executable", extensions: ["exe"] }]
+        });
+    }
+
+    validateFile(path) {
+        let expected = this.isMac ? ".app" : ".exe";
+        path?.toLowerCase().endsWith(expected) ? this.dispatch(path) : this.toast("custom_installation_selector.not_an_exe_toast");
+    }
+}
+
+export class ProcessLauncher {
+    getProcesses() {
+        return "GetProcesses";
+    }
+
+    findMatchingProcess(app, loc) {
+        if (app.platform === "custom") {
+            const path = loc.toLowerCase();
+            return proc => proc.imagePath.toLowerCase() === path;
+        }
+        return null;
+    }
+}
+

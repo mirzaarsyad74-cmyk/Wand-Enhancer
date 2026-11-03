@@ -42,6 +42,12 @@
 
 ## 🚀 Getting Started
 
+<div align="center">
+
+![How to Apply Patch](./assets/how-to-apply-patch.gif)
+
+</div>
+
 ### Option A: Download from Releases (Recommended)
 1. Go to the [**Releases Page**](https://github.com/mirzaarsyad74-cmyk/Wand-Enhancer/releases).
 2. Download `WandEnhancer.exe` (or `WandEnhancer-AutoUpdate.exe` for GitHub auto-updates).

@@ -40,7 +40,8 @@
     <PropertyGroup>
         <StartupObject>WandEnhancer.Program</StartupObject>
     </PropertyGroup>
-    <PropertyGroup Condition="'$(EnableUpdateNotifications)' == 'true'">
+    <PropertyGroup Condition="'$(EnableUpdateNotifications)' != 'false'">
+        <EnableUpdateNotifications>true</EnableUpdateNotifications>
         <DefineConstants>$(DefineConstants);ENABLE_UPDATE_NOTIFICATIONS</DefineConstants>
     </PropertyGroup>
     <ItemGroup>
@@ -148,6 +149,7 @@
         <Page Include="Locale\lang.ja-JP.xaml" />
         <Page Include="Locale\lang.tr-TR.xaml" />
         <Page Include="Locale\lang.bn-BD.xaml" />
+        <Page Include="Locale\lang.ms-MY.xaml" />
         <Page Include="Style\ColorScheme.xaml" />
         <Page Include="Style\Icons.xaml" />
         <Page Include="Style\Styles.xaml" />

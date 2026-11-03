@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Win32;
+using WandEnhancer.Core.Patching.Shared;
 using WandEnhancer.Models;
 using WandEnhancer.Utils;
 
@@ -35,12 +36,15 @@ namespace WandEnhancer.Core.Services
         /// </summary>
         public static async Task<string> DownloadLatestWandAsync(
             Action<string, ELogType> logger,
-            IProgress<int> progress = null)
+            IProgress<int> progress = null,
+            string clientType = null)
         {
-            logger("[WAND-AUTO] Resolving latest official Wand installer from CDN...", ELogType.Info);
+            bool isWeMod = string.Equals(clientType, "WeMod", StringComparison.OrdinalIgnoreCase);
+            string brandName = isWeMod ? "WeMod" : "Wand";
+            logger($"[AUTO-DOWNLOAD] Resolving latest official {brandName} installer from CDN...", ELogType.Info);
 
-            string targetUrl = await ResolveDownloadUrlAsync(PrimaryWandDownloadUrl, logger);
-            string tempInstallerPath = Path.Combine(Path.GetTempPath(), "Wand-Setup.exe");
+            string fileName = isWeMod ? "WeMod-Setup.exe" : "Wand-Setup.exe";
+            string tempInstallerPath = Path.Combine(Path.GetTempPath(), fileName);
 
             if (File.Exists(tempInstallerPath))
             {
@@ -50,11 +54,23 @@ namespace WandEnhancer.Core.Services
                 }
                 catch
                 {
-                    tempInstallerPath = Path.Combine(Path.GetTempPath(), $"Wand-Setup-{Guid.NewGuid():N}.exe");
+                    tempInstallerPath = Path.Combine(Path.GetTempPath(), $"{brandName}-Setup-{Guid.NewGuid():N}.exe");
                 }
             }
 
-            logger($"[WAND-AUTO] Connecting to download server: {targetUrl}", ELogType.Info);
+            var downloadCandidates = new List<string>();
+            if (isWeMod)
+            {
+                downloadCandidates.Add(FallbackWeModCdnUrl);
+                downloadCandidates.Add(PrimaryWandDownloadUrl);
+                downloadCandidates.Add(FallbackWandCdnUrl);
+            }
+            else
+            {
+                downloadCandidates.Add(FallbackWandCdnUrl);
+                downloadCandidates.Add(PrimaryWandDownloadUrl);
+                downloadCandidates.Add(FallbackWeModCdnUrl);
+            }
 
             using (var webClient = new WebClient())
             {
@@ -70,18 +86,35 @@ namespace WandEnhancer.Core.Services
                         long mbReceived = e.BytesReceived / (1024 * 1024);
                         long mbTotal = e.TotalBytesToReceive > 0 ? e.TotalBytesToReceive / (1024 * 1024) : 0;
                         string sizeInfo = mbTotal > 0 ? $"{mbReceived}MB / {mbTotal}MB" : $"{mbReceived}MB";
-                        logger($"[WAND-AUTO] Downloading latest Wand... {e.ProgressPercentage}% ({sizeInfo})", ELogType.Info);
+                        logger($"[AUTO-DOWNLOAD] Downloading latest {brandName}... {e.ProgressPercentage}% ({sizeInfo})", ELogType.Info);
                     }
                 };
 
-                try
+                bool downloaded = false;
+                Exception lastException = null;
+                foreach (var candidateUrl in downloadCandidates.Distinct(StringComparer.OrdinalIgnoreCase))
                 {
-                    await webClient.DownloadFileTaskAsync(new Uri(targetUrl), tempInstallerPath);
+                    try
+                    {
+                        logger($"[AUTO-DOWNLOAD] Connecting to: {candidateUrl}", ELogType.Info);
+                        await webClient.DownloadFileTaskAsync(new Uri(candidateUrl), tempInstallerPath);
+                        var check = new FileInfo(tempInstallerPath);
+                        if (check.Exists && check.Length >= 1024 * 1024)
+                        {
+                            downloaded = true;
+                            break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        lastException = ex;
+                        logger($"[AUTO-DOWNLOAD] Download from {candidateUrl} failed: {ex.Message}. Trying fallback endpoint...", ELogType.Warn);
+                    }
                 }
-                catch (Exception ex)
+
+                if (!downloaded)
                 {
-                    logger($"[WAND-AUTO] Primary download failed: {ex.Message}. Trying fallback CDN...", ELogType.Warn);
-                    await webClient.DownloadFileTaskAsync(new Uri(FallbackWandCdnUrl), tempInstallerPath);
+                    throw new IOException($"All download endpoints failed. Last error: {lastException?.Message}", lastException);
                 }
             }
 
@@ -214,6 +247,7 @@ namespace WandEnhancer.Core.Services
                 PatchTypes = new System.Collections.Generic.HashSet<EPatchType>
                 {
                     EPatchType.ActivatePro,
+                    EPatchType.AllowBatchLaunchers,
                     EPatchType.DisableUpdates,
                     EPatchType.RemoteWebPanelPreview,
                     EPatchType.DevToolsOnF12
@@ -233,7 +267,8 @@ namespace WandEnhancer.Core.Services
         public static async Task<WeModConfig> AutoRepairAsync(
             WeModConfig currentConfig,
             Action<string, ELogType> logger,
-            IProgress<int> progress = null)
+            IProgress<int> progress = null,
+            string clientType = null)
         {
             logger("[AUTO-REPAIR] Starting automated repair and restore sequence...", ELogType.Info);
             KillAllWandProcesses();
@@ -256,8 +291,9 @@ namespace WandEnhancer.Core.Services
 
             if (!restoredSuccessfully)
             {
-                logger("[AUTO-REPAIR] Downloading fresh official Wand installer for clean repair...", ELogType.Info);
-                string installerPath = await DownloadLatestWandAsync(logger, progress);
+                string chosenType = clientType ?? currentConfig?.BrandName ?? SettingsManager.LoadSettings()?.PreferredDownloadClient ?? "Wand";
+                logger($"[AUTO-REPAIR] Downloading fresh official {chosenType} installer for clean repair...", ELogType.Info);
+                string installerPath = await DownloadLatestWandAsync(logger, progress, chosenType);
                 currentConfig = await InstallWandAsync(installerPath, logger);
             }
 
@@ -276,21 +312,36 @@ namespace WandEnhancer.Core.Services
             foreach (var brand in Constants.WeModBrandNames)
             {
                 ProcessTerminator.TryKillProcess(brand);
+                ProcessTerminator.TryKillProcess($"{brand}AuxiliaryService");
             }
+            ProcessTerminator.TryKillProcess("WandEnhancerWatcher");
+            ProcessTerminator.TryKillProcess("Update");
         }
 
         /// <summary>
-        /// Completely uninstalls Wand/WeMod: stops processes, executes Squirrel uninstaller if present,
-        /// sweeps files and folders in %LOCALAPPDATA% and %APPDATA%, deletes shortcuts, and clears registry entries.
+        /// Completely and silently uninstalls Wand/WeMod: stops processes, sweeps files and folders in %LOCALAPPDATA%
+        /// and %APPDATA%, deletes shortcuts, and clears registry entries without showing any feedback surveys.
         /// </summary>
         public static async Task<bool> UninstallWandAsync(WeModConfig currentConfig, Action<string, ELogType> logger)
         {
-            logger("[UNINSTALL] Starting complete Wand / WeMod uninstallation sequence...", ELogType.Info);
+            logger("[UNINSTALL] Starting complete silent Wand / WeMod uninstallation sequence...", ELogType.Info);
 
-            // 1. Terminate running processes
-            logger("[UNINSTALL] Terminating any running Wand or WeMod processes...", ELogType.Info);
+            // 1. Terminate running processes and cleanup watcher
+            logger("[UNINSTALL] Terminating any running Wand, auxiliary, and watcher processes...", ELogType.Info);
+            if (currentConfig != null)
+            {
+                try
+                {
+                    WatcherAutostart.Stop(currentConfig);
+                    LauncherDeployment.Restore(currentConfig);
+                }
+                catch (Exception ex)
+                {
+                    logger($"[UNINSTALL] Launcher/watcher restore notice: {ex.Message}", ELogType.Info);
+                }
+            }
             KillAllWandProcesses();
-            await Task.Delay(1000);
+            await Task.Delay(500);
 
             // 2. Identify install directories
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
@@ -310,54 +361,8 @@ namespace WandEnhancer.Core.Services
                 }
             }
 
-            // 3. Attempt Squirrel uninstaller if Update.exe is found
-            string updateExe = null;
-            if (!string.IsNullOrEmpty(detectedParentDir))
-            {
-                updateExe = Path.Combine(detectedParentDir, "Update.exe");
-            }
-            if (string.IsNullOrEmpty(updateExe) || !File.Exists(updateExe))
-            {
-                string wandUpdate = Path.Combine(localAppData, "Wand", "Update.exe");
-                string weModUpdate = Path.Combine(localAppData, "WeMod", "Update.exe");
-                if (File.Exists(wandUpdate)) updateExe = wandUpdate;
-                else if (File.Exists(weModUpdate)) updateExe = weModUpdate;
-            }
-
-            if (!string.IsNullOrEmpty(updateExe) && File.Exists(updateExe))
-            {
-                try
-                {
-                    logger($"[UNINSTALL] Invoking Squirrel uninstaller: {updateExe} --uninstall -s", ELogType.Info);
-                    var psi = new ProcessStartInfo
-                    {
-                        FileName = updateExe,
-                        Arguments = "--uninstall -s",
-                        UseShellExecute = true,
-                        CreateNoWindow = true,
-                        WindowStyle = ProcessWindowStyle.Hidden
-                    };
-                    using (var proc = Process.Start(psi))
-                    {
-                        if (proc != null)
-                        {
-                            await Task.Run(() => proc.WaitForExit(15000));
-                            logger("[UNINSTALL] Squirrel uninstaller step finished.", ELogType.Info);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger($"[UNINSTALL] Squirrel uninstaller notice: {ex.Message}. Proceeding to deep clean...", ELogType.Warn);
-                }
-            }
-
-            // Ensure any spawned processes during uninstall are stopped
-            KillAllWandProcesses();
-            await Task.Delay(1000);
-
-            // 4. Deep clean local folders
-            logger("[UNINSTALL] Purging application directories...", ELogType.Info);
+            // 3. Deep clean local folders silently (bypassing Squirrel's feedback survey window)
+            logger("[UNINSTALL] Purging application directories silently...", ELogType.Info);
             var foldersToPurge = new List<string>();
 
             if (!string.IsNullOrEmpty(detectedParentDir) && Directory.Exists(detectedParentDir))
@@ -449,6 +454,28 @@ namespace WandEnhancer.Core.Services
                         foreach (var brand in Constants.WeModBrandNames)
                         {
                             try { software.DeleteSubKeyTree(brand, false); } catch { }
+                        }
+                    }
+                }
+
+                using (var classes = Registry.CurrentUser.OpenSubKey(@"Software\Classes", true))
+                {
+                    if (classes != null)
+                    {
+                        foreach (var brand in Constants.WeModBrandNames)
+                        {
+                            try { classes.DeleteSubKeyTree(brand.ToLowerInvariant(), false); } catch { }
+                        }
+                    }
+                }
+
+                using (var runKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run", true))
+                {
+                    if (runKey != null)
+                    {
+                        foreach (var brand in Constants.WeModBrandNames)
+                        {
+                            try { runKey.DeleteValue($"WandEnhancerWatcher_{brand}", false); } catch { }
                         }
                     }
                 }

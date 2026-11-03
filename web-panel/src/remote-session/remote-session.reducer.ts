@@ -30,12 +30,13 @@ export type RemoteSessionState = {
     confirmedValues: Record<string, unknown>;
     pendingWrites: Record<string, PendingWrite>;
     lastError: string | null;
+    advertisedUrls: string[];
 };
 
 export type RemoteSessionAction =
     | { type: 'setWsUrl'; wsUrl: string }
     | { type: 'connecting'; reconnecting?: boolean }
-    | { type: 'connected' }
+    | { type: 'connected'; advertisedUrls?: string[] }
     | { type: 'connectionClosed'; message: string }
     | { type: 'disconnected' }
     | { type: 'trainerMeta'; payload: TrainerMetaPayload }
@@ -65,6 +66,7 @@ export function createInitialRemoteSessionState(): RemoteSessionState {
         confirmedValues: {},
         pendingWrites: {},
         lastError: null,
+        advertisedUrls: [],
     };
 }
 
@@ -84,7 +86,12 @@ export function remoteSessionReducer(
                 lastError: null,
             };
         case 'connected':
-            return { ...state, connectionStatus: EConnectionStatus.Connected, lastError: null };
+            return {
+                ...state,
+                connectionStatus: EConnectionStatus.Connected,
+                advertisedUrls: action.advertisedUrls ?? state.advertisedUrls,
+                lastError: null,
+            };
         case 'connectionClosed':
             return {
                 ...state,

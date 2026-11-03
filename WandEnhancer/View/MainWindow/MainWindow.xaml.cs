@@ -18,7 +18,6 @@ namespace WandEnhancer.View.MainWindow
             InitializeComponent();
             this.ViewModel = new MainWindowVm(this, new WindowsFileDialogs());
             this.DataContext = ViewModel;
-            VersionLabel.Text = Constants.Version.ToString();
             Instance = this;
         }
 

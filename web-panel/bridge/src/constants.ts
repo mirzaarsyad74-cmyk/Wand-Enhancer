@@ -18,8 +18,10 @@ const IPC_CHANNEL = Object.freeze({
     GAME_STATUS: 'wand-remote-game-status',
     INSTALLED_APPS: 'wand-remote-installed-apps',
     REMOTE_URL: 'wand-remote-url',
+    RESET_TUNNEL: 'wand-remote-reset-tunnel',
     SET_VALUE: 'wand-remote-set-value',
     TRAINER_SNAPSHOT: 'wand-remote-sync',
+    URL_CHANGED: 'wand-remote-url-changed',
     VALUE_CHANGED: 'wand-remote-value-changed',
 });
 

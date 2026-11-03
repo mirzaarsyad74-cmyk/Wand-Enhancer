@@ -11,6 +11,8 @@ namespace WandEnhancer.Core.Services
         public bool CheckUpdates { get; set; } = true;
 
         public bool CheckPrereleases { get; set; }
+
+        public string PreferredDownloadClient { get; set; } = "Wand";
     }
     
     public static class SettingsManager

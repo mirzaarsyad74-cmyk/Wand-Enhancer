@@ -29,12 +29,16 @@
     <s:String x:Key="mw_uninstall_tooltip">Completely remove Wand / WeMod from this computer</s:String>
     <s:String x:Key="dialog_uninstall_title">Uninstall Wand / WeMod</s:String>
     <s:String x:Key="dialog_uninstall_confirm">Are you sure you want to completely uninstall Wand / WeMod from this computer?&#x0a;&#x0a;This will terminate running processes, remove all files from AppData, delete shortcuts, and clean registry keys.</s:String>
+    <s:String x:Key="mw_open_folder">Open installation folder in Explorer</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
     <s:String x:Key="mw_scam_warning">This is an open source project. If you paid for it, you probably got scammed!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Settings</s:String>
     <s:String x:Key="settings_language">Language</s:String>
+    <s:String x:Key="settings_preferred_client">Download client</s:String>
     <s:String x:Key="settings_check_updates">Check for updates on startup</s:String>
     <s:String x:Key="settings_check_prereleases">Also notify about pre-releases</s:String>
     <s:String x:Key="settings_save">Save</s:String>
@@ -59,6 +63,7 @@
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">Activate WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Support .bat/.cmd game launchers</s:String>
     <s:String x:Key="pv_devtools">DevTools on F12</s:String>
     <s:String x:Key="pv_disable_updates">Disable updates</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Enable remote access (beta)</s:String>

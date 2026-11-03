@@ -1,0 +1,2 @@
+if(${app}.platform===${platform}){const ${locVar}=${locParam}.toLowerCase();if(/\.(bat|cmd)$/i.test(${locVar})){const _d=${locVar}.substring(0,${locVar}.lastIndexOf("\\")+1);const _s=/\\(cmd|powershell|pwsh|conhost|kvc|drvloader|7zr|7za|crashhandler|unitycrashhandler)[^\\]*\.exe$/i;return ${procParam}=>{const _p=${procParam}.imagePath.toLowerCase();return _p.startsWith(_d)&&!_s.test(_p)&&_p.endsWith(".exe")}}return ${procParam}=>${procParam}.imagePath.toLowerCase()===${locVar}}
+

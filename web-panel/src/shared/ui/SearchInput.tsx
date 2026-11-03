@@ -41,7 +41,11 @@ export const SearchInput = ({ value, placeholder, className, onChange }: SearchI
                 >
                     <Icon className="size-3.5" name="x" />
                 </button>
-            ) : null}
+            ) : (
+                <kbd className="hidden sm:inline-flex select-none items-center rounded border border-white/10 bg-white/5 px-1.5 font-mono text-[9.5px] font-semibold text-(--deck-fg-4)">
+                    /
+                </kbd>
+            )}
         </div>
     );
 };

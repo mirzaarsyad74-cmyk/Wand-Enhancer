@@ -9,8 +9,9 @@
              Foreground="{DynamicResource MutedForeground}"
              FontWeight="Medium"
              FontSize="13">
-    <Grid MinWidth="250">
+    <Grid MinWidth="270">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -25,7 +26,7 @@
             <TextBlock Grid.Column="0" VerticalAlignment="Center" 
                        Text="{DynamicResource settings_language}" />
             <ComboBox Grid.Column="1" x:Name="LanguageComboBox" 
-                      Width="130"
+                      Width="140"
                       SelectionChanged="OnLanguageSelectionChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
@@ -34,8 +35,23 @@
                 </ComboBox.ItemTemplate>
             </ComboBox>
         </Grid>
+
+        <Grid Grid.Row="1" Margin="0 0 0 15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Grid.Column="0" VerticalAlignment="Center" 
+                       Text="{DynamicResource settings_preferred_client}" />
+            <ComboBox Grid.Column="1" x:Name="PreferredClientComboBox" 
+                      Width="140">
+                <ComboBoxItem Content="Wand (wand.com)" Tag="Wand" />
+                <ComboBoxItem Content="WeMod (wemod.com)" Tag="WeMod" />
+            </ComboBox>
+        </Grid>
         
-        <StackPanel Grid.Row="1" Margin="0 0 0 15" x:Name="UpdateCheckRows">
+        <StackPanel Grid.Row="2" Margin="0 0 0 15" x:Name="UpdateCheckRows">
             <Grid Margin="0 0 0 10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -58,7 +74,7 @@
             </Grid>
         </StackPanel>
 
-        <Button Grid.Row="2" Padding="0 5 0 5" Margin="0 5 0 0"
+        <Button Grid.Row="3" Padding="0 5 0 5" Margin="0 5 0 0"
                 Content="{DynamicResource settings_save}"
                 Click="OnSaveClick" />
     </Grid>

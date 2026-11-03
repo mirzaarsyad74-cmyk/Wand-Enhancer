@@ -12,6 +12,7 @@ import type { BridgeOptions, ElectronPort, IpcMainEventPort, WebContentsPort } f
 
 type RuntimePort = {
     remoteUrl: string;
+    resetTunnel?: () => Promise<string | null>;
     setHandler(handler: (request: unknown) => boolean): void;
     setCommandHandler(handler: (request: unknown) => Promise<unknown>): void;
     sync(snapshot: unknown): void;
@@ -163,6 +164,21 @@ function installIpcHandlers(
         return true;
     });
     electron.ipcMain.handle(IPC_CHANNEL.REMOTE_URL, () => runtime().remoteUrl);
+    electron.ipcMain.handle(IPC_CHANNEL.RESET_TUNNEL, async () => {
+        const resetFn = runtime().resetTunnel;
+        if (typeof resetFn === 'function') {
+            const newUrl = await resetFn();
+            if (newUrl) {
+                for (const sender of liveRenderers(boundRenderers)) {
+                    try {
+                        sender.send(IPC_CHANNEL.URL_CHANGED, newUrl);
+                    } catch (_) {}
+                }
+            }
+            return newUrl;
+        }
+        return null;
+    });
 }
 
 function liveRenderers(boundRenderers: Set<WebContentsPort>) {

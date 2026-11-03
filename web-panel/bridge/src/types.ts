@@ -30,6 +30,7 @@ export type BridgeClient = {
 };
 
 export type BridgeOptions = {
+    enableTunnel?: boolean;
     logFile?: string;
     port?: number;
     maxPort?: number;

@@ -16,8 +16,16 @@ namespace WandEnhancer.View.Popups
         {
             InitializeComponent();
             LoadLanguages();
-#if ENABLE_UPDATE_NOTIFICATIONS
             var savedSettings = SettingsManager.LoadSettings();
+            if (string.Equals(savedSettings?.PreferredDownloadClient, "WeMod", System.StringComparison.OrdinalIgnoreCase))
+            {
+                PreferredClientComboBox.SelectedIndex = 1;
+            }
+            else
+            {
+                PreferredClientComboBox.SelectedIndex = 0;
+            }
+#if ENABLE_UPDATE_NOTIFICATIONS
             UpdateCheckCheckBox.IsChecked = savedSettings?.CheckUpdates ?? true;
             CheckPrereleasesCheckBox.IsChecked = savedSettings?.CheckPrereleases ?? false;
 #else
@@ -63,13 +71,15 @@ namespace WandEnhancer.View.Popups
                 LocalizationManager.CurrentLanguage = _selectedLanguage;
             }
 
-#if ENABLE_UPDATE_NOTIFICATIONS
-            // CurrentLanguage already saved the merged settings; persist the checkbox on top.
             var settings = SettingsManager.LoadSettings() ?? new AppSettings();
+            var selectedItem = PreferredClientComboBox.SelectedItem as ComboBoxItem;
+            settings.PreferredDownloadClient = selectedItem?.Tag?.ToString() ?? "Wand";
+
+#if ENABLE_UPDATE_NOTIFICATIONS
             settings.CheckUpdates = UpdateCheckCheckBox.IsChecked == true;
             settings.CheckPrereleases = CheckPrereleasesCheckBox.IsChecked == true;
-            SettingsManager.SaveSettings(settings);
 #endif
+            SettingsManager.SaveSettings(settings);
             MainWindow.MainWindow.Instance?.ClosePopup();
         }
 

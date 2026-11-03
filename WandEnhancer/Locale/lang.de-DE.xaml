@@ -16,16 +16,34 @@
     <s:String x:Key="mw_star_hint">Gib einen Stern, wenn dir das geholfen hat ;)</s:String>
     <s:String x:Key="mw_copy_logs">Logs in die Zwischenablage kopieren</s:String>
     <s:String x:Key="mw_export_logs">Logs in Datei exportieren</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Vollautomatisch</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Auto-Download &amp; Patch</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ 1-Klick Auto-Patch</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Auto-Reparatur &amp; Neuinstallation</s:String>
+    <s:String x:Key="mw_terminal_clear">Löschen</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Auto-Scroll</s:String>
+    <s:String x:Key="mw_terminal_live">LIVE</s:String>
+    <s:String x:Key="mw_terminal_busy">BESCHÄFTIGT</s:String>
+    <s:String x:Key="mw_uninstall">Deinstallieren</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Wand / WeMod vollständig von diesem Computer entfernen</s:String>
+    <s:String x:Key="dialog_uninstall_title">Wand / WeMod deinstallieren</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Möchten Sie Wand / WeMod wirklich vollständig von diesem Computer entfernen?&#x0a;&#x0a;Dadurch werden laufende Prozesse beendet, alle Dateien aus AppData gelöscht, Verknüpfungen entfernt und Registrierungsschlüssel bereinigt.</s:String>
+    <s:String x:Key="mw_open_folder">Installationsordner im Explorer öffnen</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">Dies ist ein Open-Source-Projekt. Wenn Sie dafür bezahlt haben, wurden Sie wahrscheinlich betrogen!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Einstellungen</s:String>
     <s:String x:Key="settings_language">Sprache</s:String>
+    <s:String x:Key="settings_preferred_client">Download-Client</s:String>
     <s:String x:Key="settings_save">Speichern</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">WeMod Pro aktivieren</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Unterstützung für .bat/.cmd Spiel-Starter</s:String>
     <s:String x:Key="pv_devtools">DevTools mit F12</s:String>
     <s:String x:Key="pv_disable_updates">Updates deaktivieren</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Remote-Zugriff aktivieren (Beta)</s:String>

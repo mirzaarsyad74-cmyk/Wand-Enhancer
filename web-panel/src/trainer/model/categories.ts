@@ -1,3 +1,4 @@
+import type { LibraryGame } from '@/library/model/games';
 import { formatHumanLabel } from '@/shared/lib/ui';
 import type { CheatSchema, TrainerMetaPayload, TrainerSummary } from '../../../protocol/messages';
 
@@ -76,6 +77,13 @@ function cheatMatchesQuery(cheat: CheatSchema, query: string): boolean {
     return false;
 }
 
-export function getTrainerDisplayName(trainer: TrainerSummary): string {
-    return trainer.displayName?.trim() || trainer.gameId || trainer.titleId || trainer.trainerId;
+export function getTrainerDisplayName(trainer: TrainerSummary, game?: LibraryGame | null): string {
+    if (game?.title?.trim()) {
+        return game.title.trim();
+    }
+    const name = trainer.displayName?.trim();
+    if (name && name !== trainer.gameId && name !== trainer.trainerId) {
+        return name;
+    }
+    return name || trainer.gameId || trainer.titleId || trainer.trainerId;
 }

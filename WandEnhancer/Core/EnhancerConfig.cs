@@ -141,6 +141,24 @@ namespace WandEnhancer.Core
                             Locate = LocateBridgeValueDelta
                         }
                     }
+                },
+                {
+                    EPatchType.AllowBatchLaunchers,
+                    new[]
+                    {
+                        new PatchEntry
+                        {
+                            Name = "allowBatchCustomSelector",
+                            SearchHints = new[] { "custom_installation_selector.select_your_game_exe" },
+                            Locate = LocateBatchSelector
+                        },
+                        new PatchEntry
+                        {
+                            Name = "allowBatchProcessMatching",
+                            SearchHints = new[] { "GetProcesses" },
+                            Locate = LocateBatchProcessMatching
+                        }
+                    }
                 }
             };
         }
@@ -401,5 +419,70 @@ namespace WandEnhancer.Core
         private static readonly Regex WhenReadyThenRun = new Regex(@"(?<app>[\w$]+)\.whenReady\(\)\.then\(run\)");
         private static readonly Regex RemoteSetValue =
             new Regex(@"this\.(?<trainer>#[\w$]+)\.setValue\(\s*(?<change>[\w$]+)\.name\s*,\s*\k<change>\.value\s*,\s*(?<source>[^,]+?)\s*,");
+        private static readonly Regex BatchCustomMatch =
+            new Regex(@"if\s*\(\s*(?<app>[\w$]+)\.platform\s*===\s*(?<platform>[""'\w$.]+)\s*\)\s*\{\s*(?:const|let|var)\s+(?<locVar>[\w$]+)\s*=\s*(?<locParam>[\w$]+)\.toLowerCase\(\)\s*;\s*return\s*(?:\(\s*)?(?<procParam>[\w$]+)(?:\s*\))?\s*=>\s*\k<procParam>\.imagePath\.toLowerCase\(\)\s*===\s*\k<locVar>\s*;?\s*\}");
+
+        private static JsEdit[] LocateBatchSelector(JsCursor js)
+        {
+            int anchor = js.IndexOf("\"custom_installation_selector.select_your_game_exe\"");
+            if (anchor < 0)
+            {
+                return null;
+            }
+
+            var selectMethod = js.EnclosingFunction(anchor);
+            if (selectMethod == null)
+            {
+                throw new Exception("CustomInstallationSelector.selectInstallation could not be located");
+            }
+
+            var edits = new List<JsEdit>();
+            edits.Add(selectMethod.ReplaceInBody(@"\[\s*""exe""\s*\]", PatchPayload.Load("batch-selector-exts")));
+
+            int toastAnchor = js.IndexOf("\"custom_installation_selector.not_an_exe_toast\"");
+            if (toastAnchor >= 0)
+            {
+                var validateMethod = js.EnclosingFunction(toastAnchor);
+                if (validateMethod != null)
+                {
+                    string header = js.Text.Substring(validateMethod.Start, validateMethod.BodyOpen - validateMethod.Start);
+                    var paramMatch = Regex.Match(header, @"\(\s*(?<param>[\w$]+)\s*\)");
+                    if (paramMatch.Success)
+                    {
+                        string param = paramMatch.Groups["param"].Value;
+                        edits.Add(validateMethod.ReplaceInBody(
+                            @"(?<check>[\w$]+\??\.toLowerCase\(\)\.endsWith\([^)]+\))\s*\?",
+                            PatchPayload.Load("batch-selector-check", "check", "${check}", "param", param)));
+                    }
+                }
+            }
+
+            return edits.ToArray();
+        }
+
+        private static JsEdit[] LocateBatchProcessMatching(JsCursor js)
+        {
+            int anchor = js.IndexOf("\"GetProcesses\"");
+            if (anchor < 0)
+            {
+                return null;
+            }
+
+            var match = BatchCustomMatch.Match(js.Text);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            var payload = PatchPayload.Load(
+                "batch-process-match",
+                "app", match.Groups["app"].Value,
+                "platform", match.Groups["platform"].Value,
+                "locVar", match.Groups["locVar"].Value,
+                "locParam", match.Groups["locParam"].Value,
+                "procParam", match.Groups["procParam"].Value);
+
+            return Edits(new JsEdit(match.Index, match.Index + match.Length, payload));
+        }
     }
 }

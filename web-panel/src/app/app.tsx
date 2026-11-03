@@ -1,6 +1,7 @@
 import { msg } from '@lingui/core/macro';
 import { useLingui } from '@lingui/react';
 import { Trans } from '@lingui/react/macro';
+import { useEffect } from 'react';
 
 import { FloatingDock } from '@/app/ui/FloatingDock';
 import { SessionPlaceholder } from '@/app/ui/SessionPlaceholder';
@@ -20,11 +21,47 @@ export const App = () => {
     const panel = useRemotePanel();
     const { session, trainer, library, shell } = panel;
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            const isTyping =
+                target?.tagName === 'INPUT' ||
+                target?.tagName === 'TEXTAREA' ||
+                target?.isContentEditable;
+
+            if (e.key === '/' && !isTyping) {
+                e.preventDefault();
+                const searchInput = document.querySelector(
+                    'input[type="text"], input:not([type])',
+                ) as HTMLInputElement | null;
+                searchInput?.focus();
+            } else if (e.key === 'Escape') {
+                if (shell.leftOpen) {
+                    shell.closeSettings();
+                } else if (shell.rightOpen) {
+                    shell.closeLibrary();
+                } else if (trainer.query) {
+                    trainer.setQuery('');
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [
+        shell.leftOpen,
+        shell.rightOpen,
+        shell.closeSettings,
+        shell.closeLibrary,
+        trainer.query,
+        trainer.setQuery,
+    ]);
+
     return (
-        <main className="min-h-svh bg-[#050608] text-(--deck-fg)">
-            <div className="flex min-h-svh w-full p-0">
-                <section className="relative h-svh w-full overflow-hidden bg-(--deck-bg) shadow-[0_40px_100px_-20px_rgba(0,0,0,.7),0_0_0_1px_rgba(255,255,255,.06)]">
-                    <div className="pointer-events-none absolute -inset-12 z-0 bg-[radial-gradient(circle_at_30%_15%,color-mix(in_oklab,var(--deck-accent)_22%,transparent),transparent_45%),radial-gradient(circle_at_80%_85%,color-mix(in_oklab,var(--deck-accent)_16%,transparent),transparent_45%),radial-gradient(circle_at_20%_80%,color-mix(in_oklab,var(--deck-accent)_8%,transparent),transparent_50%)]" />
+        <main className="min-h-svh overflow-x-hidden bg-[#050608] text-(--deck-fg)">
+            <div className="flex min-h-svh w-full overflow-x-hidden p-0">
+                <section className="relative h-svh w-full overflow-hidden overflow-x-clip bg-(--deck-bg) shadow-[0_40px_100px_-20px_rgba(0,0,0,.7),0_0_0_1px_rgba(255,255,255,.06)]">
+                    <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(circle_at_30%_15%,color-mix(in_oklab,var(--deck-accent)_22%,transparent),transparent_45%),radial-gradient(circle_at_80%_85%,color-mix(in_oklab,var(--deck-accent)_16%,transparent),transparent_45%),radial-gradient(circle_at_20%_80%,color-mix(in_oklab,var(--deck-accent)_8%,transparent),transparent_50%)]" />
                     <div className="pointer-events-none absolute inset-0 z-0 bg-[radial-gradient(ellipse_100%_60%_at_50%_0%,rgba(255,255,255,0.025),transparent)]" />
                     <div className="relative z-10 flex h-full flex-col">
                         <TopBar
@@ -38,14 +75,16 @@ export const App = () => {
                             onScroll={shell.onScroll}
                         >
                             {!session.connected || !trainer.activeTrainer ? (
-                                <SessionPlaceholder
-                                    connected={session.connected}
-                                    activeTrainer={trainer.activeTrainer}
-                                    onOpenLibrary={shell.openLibrary}
-                                    onOpenSettings={shell.openSettings}
-                                />
+                                <div className="mx-auto w-full max-w-4xl">
+                                    <SessionPlaceholder
+                                        connected={session.connected}
+                                        activeTrainer={trainer.activeTrainer}
+                                        onOpenLibrary={shell.openLibrary}
+                                        onOpenSettings={shell.openSettings}
+                                    />
+                                </div>
                             ) : (
-                                <>
+                                <div className="mx-auto w-full max-w-4xl">
                                     <TrainerHeader
                                         trainer={trainer.activeTrainer}
                                         game={library.currentGame}
@@ -81,20 +120,22 @@ export const App = () => {
                                             onTogglePin={trainer.togglePin}
                                         />
                                     ) : null}
-                                    {trainer.filteredGroups.map((group, index) => (
-                                        <CategorySection
-                                            key={group.id}
-                                            forceOpen={Boolean(trainer.query)}
-                                            group={group}
-                                            openByDefault={index < 2}
-                                            values={session.values}
-                                            pendingTargets={session.pendingTargets}
-                                            pinnedTargets={trainer.pinnedTargets}
-                                            disabled={trainer.controlsDisabled}
-                                            onCheatChange={trainer.changeCheat}
-                                            onTogglePin={trainer.togglePin}
-                                        />
-                                    ))}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-3 md:items-start">
+                                        {trainer.filteredGroups.map((group, index) => (
+                                            <CategorySection
+                                                key={group.id}
+                                                forceOpen={Boolean(trainer.query)}
+                                                group={group}
+                                                openByDefault={index < 4}
+                                                values={session.values}
+                                                pendingTargets={session.pendingTargets}
+                                                pinnedTargets={trainer.pinnedTargets}
+                                                disabled={trainer.controlsDisabled}
+                                                onCheatChange={trainer.changeCheat}
+                                                onTogglePin={trainer.togglePin}
+                                            />
+                                        ))}
+                                    </div>
                                     {trainer.query && trainer.totalVisibleCheats === 0 ? (
                                         <p className="px-8 py-8 text-center text-[13px] text-(--deck-fg-4)">
                                             <Trans>No mods match "{trainer.query}"</Trans>
@@ -105,7 +146,7 @@ export const App = () => {
                                             ? _(msg`${trainer.totalVisibleCheats} matches`)
                                             : _(msg`END · ${trainer.totalCheats} MODS`)}
                                     </div>
-                                </>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -132,6 +173,7 @@ export const App = () => {
                             currentGame={library.currentGame}
                             currentTrainer={trainer.activeTrainer}
                             lastError={session.lastError}
+                            advertisedUrls={session.advertisedUrls}
                             onClose={shell.closeSettings}
                             onConnect={session.connect}
                             onDisconnect={session.disconnect}

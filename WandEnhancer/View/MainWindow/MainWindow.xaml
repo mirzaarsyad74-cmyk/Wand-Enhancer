@@ -46,22 +46,21 @@
                         <TextBlock Text="PRO" FontSize="9.5" FontWeight="Bold" Foreground="#a5b4fc" FontFamily="Consolas, sans-serif"/>
                     </Border>
                     <TextBlock x:Name="VersionLabel" VerticalAlignment="Bottom"
-                               Opacity="0.5" FontSize="10" Margin="6 0 0 5"
-                               Foreground="{DynamicResource Foreground}">
-                        v 1.0.0
-                    </TextBlock>
+                               Text="{Binding VersionDisplay, FallbackValue='v2.1.1.0'}"
+                               Opacity="0.65" FontSize="10" Margin="6 0 0 5"
+                               FontFamily="Consolas, Segoe UI, sans-serif"
+                               Foreground="{DynamicResource Foreground}" />
 
-                    <Button Margin="10 0 0 0" Padding="8 2"
-                            VerticalAlignment="Center" FontSize="10.5" FontWeight="SemiBold"
-                            Background="{DynamicResource Primary}"
-                            Foreground="{DynamicResource PrimaryForeground}"
+                    <Button Margin="8 0 0 0" Padding="8 3"
+                            VerticalAlignment="Center" FontSize="10" FontWeight="Bold"
+                            Background="#e11d48"
+                            Foreground="White"
                             BorderThickness="0" Cursor="Hand"
-                            Content="{DynamicResource mw_update_badge}"
                             Command="{Binding ShowUpdateCommand}"
                             ToolTip="{DynamicResource up_popup_title}">
                         <Button.Style>
                             <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-                                <!-- Collapsed by default so offline builds never show the badge. -->
+                                <!-- Collapsed by default until an update is detected. -->
                                 <Setter Property="Visibility" Value="Collapsed" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="True">
@@ -73,11 +72,41 @@
                         <Button.Resources>
                             <CornerRadius x:Key="CornerRadius">4 4 4 4</CornerRadius>
                         </Button.Resources>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="⚡ " FontSize="10" VerticalAlignment="Center" />
+                            <TextBlock Text="{DynamicResource mw_update_badge}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding NewVersionBadgeText}" Margin="4 0 0 0" VerticalAlignment="Center" FontWeight="Bold" />
+                        </StackPanel>
                     </Button>
 
                 </StackPanel>
                                 
                 <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" Margin="0 0 15 0" VerticalAlignment="Center">
+                    <Button
+                        Margin="0 0 6 0"
+                        Tag="{StaticResource FolderIcon}"
+                        Width="28" Height="28" Padding="6"
+                        Style="{StaticResource IconButton}"
+                        Command="{Binding OpenInstallFolderCommand}"
+                        Visibility="{Binding HasInstall, Converter={StaticResource ToVisibilityConverter}}"
+                        ToolTip="{DynamicResource mw_open_folder}"
+                        VerticalAlignment="Center">
+                        <Button.Resources>
+                            <CornerRadius x:Key="CornerRadius">5 5 5 5</CornerRadius>
+                        </Button.Resources>
+                    </Button>
+                    <Button
+                        Margin="0 0 6 0"
+                        Tag="{StaticResource CogIcon}"
+                        Width="28" Height="28" Padding="6"
+                        Style="{StaticResource IconButton}"
+                        Command="{Binding OpenSettingsCommand}"
+                        ToolTip="{DynamicResource settings_title}"
+                        VerticalAlignment="Center">
+                        <Button.Resources>
+                            <CornerRadius x:Key="CornerRadius">5 5 5 5</CornerRadius>
+                        </Button.Resources>
+                    </Button>
                     <Button
                         Margin="0 0 6 0"
                         Tag="{StaticResource MinimizeIcon}"
@@ -344,7 +373,14 @@
                                 FontWeight="SemiBold" FontSize="12.5"
                                 Style="{StaticResource {x:Type Button}}"
                                 IsEnabled="{Binding IsIdle}"
-                                Content="{DynamicResource mw_auto_repair}"/>
+                                Content="{DynamicResource mw_auto_repair}">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{DynamicResource mw_auto_client_wand}" Command="{Binding AutoRepairCommand}" CommandParameter="Wand"/>
+                                    <MenuItem Header="{DynamicResource mw_auto_client_wemod}" Command="{Binding AutoRepairCommand}" CommandParameter="WeMod"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
 
                         <!-- Manual Options Popup -->
                         <Button Margin="0 0 8 0" Padding="14 0" Height="36"
@@ -360,7 +396,14 @@
                                 IsEnabled="{Binding IsIdle}"
                                 FontWeight="Bold" FontSize="13.5"
                                 Command="{Binding FullAutoCommand}"
-                                Content="{Binding AutoButtonText}"/>
+                                Content="{Binding AutoButtonText}">
+                            <Button.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="{DynamicResource mw_auto_client_wand}" Command="{Binding FullAutoCommand}" CommandParameter="Wand"/>
+                                    <MenuItem Header="{DynamicResource mw_auto_client_wemod}" Command="{Binding FullAutoCommand}" CommandParameter="WeMod"/>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
                     </StackPanel>
                 </Grid>
             </Grid>

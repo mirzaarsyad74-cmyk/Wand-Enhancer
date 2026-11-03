@@ -21,12 +21,16 @@ namespace WandEnhancer.View.Popups
         {
             InitializeComponent();
 
+            string tag = latestVersion?.StartsWith("v", StringComparison.OrdinalIgnoreCase) == true
+                ? latestVersion
+                : $"v{latestVersion}";
+
             _updateRelease = updateRelease ?? new UpdateNotifier.UpdateRelease
             {
                 Version = latestVersion,
                 Notes = latestNotes,
                 Url = releaseUrl,
-                DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{latestVersion}/WandEnhancer.exe"
+                DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{tag}/WandEnhancer.exe"
             };
 
             CurrentVersionValue.Text = currentVersion;

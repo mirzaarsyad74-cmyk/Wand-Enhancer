@@ -31,7 +31,7 @@ export const TrainerHeader = ({ trainer, game, isPinned, onPin }: TrainerHeaderP
                         </span>
                     </div>
                     <h2 className="mt-1 truncate text-base font-bold leading-tight text-(--deck-fg)">
-                        {getTrainerDisplayName(trainer)}
+                        {getTrainerDisplayName(trainer, game)}
                     </h2>
                     <div className="mt-1 flex min-w-0 items-center gap-2.5 font-mono text-[11px] text-(--deck-fg-3)">
                         <span className="truncate uppercase">{game?.platform ?? 'Wand'}</span>

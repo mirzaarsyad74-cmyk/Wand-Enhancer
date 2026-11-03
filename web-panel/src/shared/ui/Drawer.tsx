@@ -15,9 +15,9 @@ const DRAWER_CLOSED_CLASSES = {
 } as const;
 
 const DRAWER_OVERLAY_CLASS =
-    'remote-drawer-overlay absolute inset-0 z-30 transition-opacity duration-200 ease-out motion-reduce:transition-none';
+    'remote-drawer-overlay fixed inset-0 z-40 transition-opacity duration-200 ease-out motion-reduce:transition-none';
 const DRAWER_PANEL_CLASS =
-    'remote-drawer-panel absolute bottom-0 top-0 z-40 flex w-[88%] max-w-90 flex-col border-white/10 transition-transform duration-300 ease-out motion-reduce:transition-none';
+    'remote-drawer-panel fixed bottom-0 top-0 z-50 flex w-[88%] max-w-[360px] sm:max-w-[400px] flex-col border-white/10 transition-transform duration-300 ease-out motion-reduce:transition-none';
 
 const FOCUSABLE_SELECTOR =
     'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';

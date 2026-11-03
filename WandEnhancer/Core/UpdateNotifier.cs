@@ -150,7 +150,7 @@ namespace WandEnhancer.Core
 
                 var exeAsset = release.Assets?.FirstOrDefault(a =>
                     !string.IsNullOrEmpty(a.Name) &&
-                    (a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || a.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase)));
+                    a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
 
                 if (exeAsset != null)
                 {
@@ -348,12 +348,16 @@ namespace WandEnhancer.Core
             string updaterScript = Path.Combine(Path.GetTempPath(), $"wand-update-{Guid.NewGuid():N}.cmd");
 
             string scriptContent = $@"@echo off
-timeout /t 1 /nobreak > nul
+set /a retries=0
 :retry
+timeout /t 1 /nobreak > nul
+set /a retries+=1
 copy /y ""{tempUpdateExe}"" ""{currentExe}"" > nul
 if errorlevel 1 (
-    timeout /t 1 /nobreak > nul
-    goto retry
+    if %retries% lss 20 goto retry
+    del ""{tempUpdateExe}"" > nul 2>&1
+    del ""%~f0"" > nul 2>&1
+    exit /b 1
 )
 del ""{tempUpdateExe}"" > nul 2>&1
 start """" ""{currentExe}""

@@ -208,6 +208,7 @@ namespace WandEnhancer.View.MainWindow
         public RelayCommand UninstallCommand { get; }
         public RelayCommand ClearLogsCommand { get; }
         public RelayCommand ToggleAutoScrollCommand { get; }
+        public RelayCommand OpenInstallFolderCommand { get; }
 
         private void OnFolderPathSelection(object obj)
         {
@@ -337,9 +338,22 @@ namespace WandEnhancer.View.MainWindow
             {
                 try
                 {
-                    if (WeModInfo == null)
+                    var targetConfig = WeModInfo;
+                    if (targetConfig == null)
                     {
-                        Log("[FULL-AUTO] Wand installation not found. Starting automatic download and installation...", ELogType.Info);
+                        var settings = SettingsManager.LoadSettings();
+                        string chosenClient = param as string;
+                        if (string.IsNullOrEmpty(chosenClient))
+                        {
+                            chosenClient = settings?.PreferredDownloadClient ?? "Wand";
+                        }
+                        else if (settings != null && !string.Equals(settings.PreferredDownloadClient, chosenClient, StringComparison.OrdinalIgnoreCase))
+                        {
+                            settings.PreferredDownloadClient = chosenClient;
+                            SettingsManager.SaveSettings(settings);
+                        }
+
+                        Log($"[FULL-AUTO] Installation not found. Starting automatic download and installation ({chosenClient})...", ELogType.Info);
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             DownloadProgress = 0;
@@ -349,20 +363,20 @@ namespace WandEnhancer.View.MainWindow
                         {
                             Application.Current.Dispatcher.Invoke(() => DownloadProgress = pct);
                         });
-                        string installer = await WandManagerService.DownloadLatestWandAsync(Log, progress);
+                        string installer = await WandManagerService.DownloadLatestWandAsync(Log, progress, chosenClient);
                         Application.Current.Dispatcher.Invoke(() => IsDownloading = false);
-                        var newConfig = await WandManagerService.InstallWandAsync(installer, Log);
-                        Application.Current.Dispatcher.Invoke(() => UseInstall(newConfig));
+                        targetConfig = await WandManagerService.InstallWandAsync(installer, Log);
+                        Application.Current.Dispatcher.Invoke(() => UseInstall(targetConfig));
                     }
 
-                    if (WeModInfo == null)
+                    if (targetConfig == null)
                     {
                         Log("[FULL-AUTO] Could not locate or initialize Wand installation.", ELogType.Error);
                         return;
                     }
 
                     Log("[FULL-AUTO] Applying full automated patch configuration...", ELogType.Info);
-                    WandManagerService.AutoPatch(WeModInfo, Log);
+                    WandManagerService.AutoPatch(targetConfig, Log);
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
@@ -402,7 +416,19 @@ namespace WandEnhancer.View.MainWindow
             {
                 try
                 {
-                    Log("[AUTO-REPAIR] Initiating full auto-repair and reinstall sequence...", ELogType.Info);
+                    var settings = SettingsManager.LoadSettings();
+                    string chosenClient = param as string;
+                    if (string.IsNullOrEmpty(chosenClient))
+                    {
+                        chosenClient = settings?.PreferredDownloadClient ?? "Wand";
+                    }
+                    else if (settings != null && !string.Equals(settings.PreferredDownloadClient, chosenClient, StringComparison.OrdinalIgnoreCase))
+                    {
+                        settings.PreferredDownloadClient = chosenClient;
+                        SettingsManager.SaveSettings(settings);
+                    }
+
+                    Log($"[AUTO-REPAIR] Initiating full auto-repair and reinstall sequence ({chosenClient})...", ELogType.Info);
                     var progress = new Progress<int>(pct =>
                     {
                         Application.Current.Dispatcher.Invoke(() =>
@@ -411,7 +437,8 @@ namespace WandEnhancer.View.MainWindow
                             DownloadProgress = pct;
                         });
                     });
-                    var repairedConfig = await WandManagerService.AutoRepairAsync(WeModInfo, Log, progress);
+                    var targetConfig = WeModInfo;
+                    var repairedConfig = await WandManagerService.AutoRepairAsync(targetConfig, Log, progress, chosenClient);
                     Application.Current.Dispatcher.Invoke(() => IsDownloading = false);
 
                     Application.Current.Dispatcher.Invoke(() =>
@@ -497,6 +524,25 @@ namespace WandEnhancer.View.MainWindow
         private void OnOpenSettings(object param)
         {
             _shell.OpenPopup(new SettingsPopup(), LocalizationManager.Get("settings_title"));
+        }
+
+        private void OnOpenInstallFolder(object param)
+        {
+            try
+            {
+                if (WeModInfo != null && !string.IsNullOrEmpty(WeModInfo.RootDirectory) && Directory.Exists(WeModInfo.RootDirectory))
+                {
+                    Process.Start("explorer.exe", WeModInfo.RootDirectory);
+                }
+                else
+                {
+                    Log(LocalizationManager.Get("log_no_directory"), ELogType.Warn);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Failed to open directory: {ex.Message}", ELogType.Warn);
+            }
         }
 
         private string BuildLogReport()
@@ -592,6 +638,7 @@ namespace WandEnhancer.View.MainWindow
             UninstallCommand = new RelayCommand(OnUninstall);
             ClearLogsCommand = new RelayCommand(OnClearLogs);
             ToggleAutoScrollCommand = new RelayCommand(OnToggleAutoScroll);
+            OpenInstallFolderCommand = new RelayCommand(OnOpenInstallFolder);
 
             // Display anti-scam notice on startup
             Log("[SECURITY] " + LocalizationManager.Get("mw_scam_warning"), ELogType.Warn);
@@ -612,6 +659,20 @@ namespace WandEnhancer.View.MainWindow
             ShowUpdateCommand = new RelayCommand(OnShowUpdate);
             UpdateNotifier.CheckInBackground(OnUpdateFound, OnNotificationClick);
 #endif
+        }
+
+        private string _versionDisplay = "v" + Constants.Version;
+        public string VersionDisplay
+        {
+            get => _versionDisplay;
+            set => SetProperty(ref _versionDisplay, value);
+        }
+
+        private string _newVersionBadgeText = string.Empty;
+        public string NewVersionBadgeText
+        {
+            get => _newVersionBadgeText;
+            set => SetProperty(ref _newVersionBadgeText, value);
         }
 
 #if ENABLE_UPDATE_NOTIFICATIONS
@@ -638,6 +699,9 @@ namespace WandEnhancer.View.MainWindow
             {
                 _availableUpdate = update;
                 IsUpdateAvailable = true;
+                VersionDisplay = $"v{Constants.Version} → v{update.Version}";
+                NewVersionBadgeText = $"v{update.Version}";
+                Log($"[UPDATE] New version v{update.Version} is available! Click the badge in the title bar to update.", ELogType.Info);
             });
         }
 
@@ -661,7 +725,7 @@ namespace WandEnhancer.View.MainWindow
         {
             _shell.OpenPopup(
                 new UpdatePopup(Constants.Version.ToString(), update.Version, update.Notes,
-                    update.Url, UpdateNotifier.GetFullChangelogAsync),
+                    update.Url, UpdateNotifier.GetFullChangelogAsync, update),
                 LocalizationManager.Get("up_popup_title"));
         }
 #endif

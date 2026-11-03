@@ -16,16 +16,54 @@
     <s:String x:Key="mw_star_hint">Daj gwiazdkę, jeśli ci pomogło ;)</s:String>
     <s:String x:Key="mw_copy_logs">Skopiuj logi do schowka</s:String>
     <s:String x:Key="mw_export_logs">Eksportuj logi do pliku</s:String>
+    <s:String x:Key="mw_update_badge">Nowa wersja dostępna</s:String>
+    <s:String x:Key="mw_full_auto">⚡ Pełne Auto</s:String>
+    <s:String x:Key="mw_auto_download">⚡ Auto Pobieranie i Patch</s:String>
+    <s:String x:Key="mw_auto_patch">⚡ Auto-Patch w 1 Kliknięcie</s:String>
+    <s:String x:Key="mw_auto_repair">⚡ Auto Naprawa i Reinstalacja</s:String>
+    <s:String x:Key="mw_terminal_clear">Wyczyść</s:String>
+    <s:String x:Key="mw_terminal_autoscroll">Auto-przewijanie</s:String>
+    <s:String x:Key="mw_terminal_live">NA ŻYWO</s:String>
+    <s:String x:Key="mw_terminal_busy">ZAJĘTE</s:String>
+    <s:String x:Key="mw_uninstall">Odinstaluj</s:String>
+    <s:String x:Key="mw_uninstall_tooltip">Całkowicie usuń Wand / WeMod z tego komputera</s:String>
+    <s:String x:Key="dialog_uninstall_title">Odinstaluj Wand / WeMod</s:String>
+    <s:String x:Key="dialog_uninstall_confirm">Czy na pewno chcesz całkowicie odinstalować Wand / WeMod z tego komputera?&#x0a;&#x0a;Spowoduje to zatrzymanie uruchomionych procesów, usunięcie wszystkich plików z AppData, usunięcie skrótów i wyczyszczenie rejestru.</s:String>
+    <s:String x:Key="mw_open_folder">Otwórz folder instalacji w Eksploratorze</s:String>
+    <s:String x:Key="mw_auto_client_wand">Wand (wand.com)</s:String>
+    <s:String x:Key="mw_auto_client_wemod">WeMod (wemod.com)</s:String>
+    <s:String x:Key="mw_scam_warning">To jest projekt open source. Jeśli za niego zapłaciłeś, prawdopodobnie zostałeś oszukany!</s:String>
     <!--#endregion -->
 
     <!--#region Settings -->
     <s:String x:Key="settings_title">Ustawienia</s:String>
     <s:String x:Key="settings_language">Język</s:String>
+    <s:String x:Key="settings_preferred_client">Klient pobierania</s:String>
+    <s:String x:Key="settings_check_updates">Sprawdzaj aktualizacje przy uruchomieniu</s:String>
+    <s:String x:Key="settings_check_prereleases">Powiadamiaj również o wersjach wstępnych</s:String>
     <s:String x:Key="settings_save">Zapisz</s:String>
+    <!--#endregion -->
+
+    <!--#region UpdatePopup -->
+    <s:String x:Key="up_popup_title">Dostępna aktualizacja</s:String>
+    <s:String x:Key="up_warning">Kliknij Auto Aktualizacja, aby automatycznie pobrać i zastosować aktualizację z GitHub.</s:String>
+    <s:String x:Key="up_current_version">Bieżąca:</s:String>
+    <s:String x:Key="up_latest_version">Najnowsza:</s:String>
+    <s:String x:Key="up_release_notes">Informacje o wydaniu</s:String>
+    <s:String x:Key="up_show_more">Pokaż pełną listę zmian</s:String>
+    <s:String x:Key="up_show_less">Pokaż informacje o wydaniu</s:String>
+    <s:String x:Key="up_loading_changelog">Ładowanie...</s:String>
+    <s:String x:Key="up_changelog_failed">Nie udało się załadować pełnej listy zmian.</s:String>
+    <s:String x:Key="up_release_notes_unavailable">Brak opublikowanych informacji o wydaniu.</s:String>
+    <s:String x:Key="up_open_release">Otwórz stronę wydania</s:String>
+    <s:String x:Key="up_auto_update">⚡ Auto Aktualizacja</s:String>
+    <s:String x:Key="up_updating">Aktualizowanie...</s:String>
+    <s:String x:Key="up_downloading_update">Pobieranie najnowszej aktualizacji z GitHub...</s:String>
     <!--#endregion -->
 
     <!--#region EnhanceVectorsPopup -->
     <s:String x:Key="pv_activate_pro">Aktywuj WeMod Pro</s:String>
+    <s:String x:Key="pv_allow_batch_launchers">Obsługa launcherów gier .bat/.cmd</s:String>
     <s:String x:Key="pv_devtools">DevTools na F12</s:String>
     <s:String x:Key="pv_disable_updates">Wyłącz aktualizacje</s:String>
     <s:String x:Key="pv_remote_web_panel_preview">Włącz zdalny dostęp (beta)</s:String>

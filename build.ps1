@@ -1,7 +1,7 @@
 param(
     [ValidateSet('Debug', 'Release')]
     [string]$Configuration = 'Release',
-    [switch]$EnableUpdateNotifications
+    [bool]$EnableUpdateNotifications = $true
 )
 
 $ErrorActionPreference = 'Stop'
@@ -12,6 +12,11 @@ $solutionPath = Join-Path $repoRoot 'Wand-Enhancer.sln'
 
 function Resolve-CommandPath {
     param([string]$Name)
+
+    $cmd = Get-Command "$Name.cmd" -ErrorAction SilentlyContinue
+    if ($cmd) {
+        return $cmd.Source
+    }
 
     $command = Get-Command $Name -ErrorAction SilentlyContinue
     if (-not $command) {
@@ -86,6 +91,8 @@ if ($targetFrameworkRoot) {
 }
 if ($EnableUpdateNotifications) {
     $buildArgs += '/p:EnableUpdateNotifications=true'
+} else {
+    $buildArgs += '/p:EnableUpdateNotifications=false'
 }
 
 Invoke-Step 'Install web-panel dependencies' {
