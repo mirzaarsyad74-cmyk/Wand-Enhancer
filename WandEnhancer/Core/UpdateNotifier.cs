@@ -247,10 +247,6 @@ namespace WandEnhancer.Core
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Accept = "application/vnd.github+json";
             request.UserAgent = $"WandEnhancer/{Constants.Version}";
-            if (!string.IsNullOrWhiteSpace(Constants.GitHubToken))
-            {
-                request.Headers["Authorization"] = $"token {Constants.GitHubToken}";
-            }
             return request;
         }
 
@@ -368,113 +364,50 @@ namespace WandEnhancer.Core
                 throw new ArgumentException("Invalid update release metadata or download URL.");
             }
 
+            string downloadUrl = !string.IsNullOrEmpty(update.DownloadUrl) ? update.DownloadUrl : update.ApiAssetUrl;
             string tempUpdateExe = Path.Combine(Path.GetTempPath(), $"WandEnhancer-Update-{Guid.NewGuid():N}.exe");
             logger?.Invoke($"[UPDATE] Downloading WandEnhancer v{update.Version} from GitHub release...", ELogType.Info);
 
-            bool downloadSucceeded = false;
-
-            // Method 1: Try GitHub Release Asset API endpoint (with token authorization & octet-stream accept)
-            if (!string.IsNullOrEmpty(update.ApiAssetUrl))
+            try
             {
-                try
+                var request = (HttpWebRequest)WebRequest.Create(downloadUrl);
+                request.UserAgent = $"WandEnhancer/{Constants.Version}";
+                request.Accept = "*/*";
+                request.AllowAutoRedirect = true;
+
+                using (var response = (HttpWebResponse)await request.GetResponseAsync())
+                using (var responseStream = response.GetResponseStream())
+                using (var fileStream = new FileStream(tempUpdateExe, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    logger?.Invoke("[UPDATE] Connecting to GitHub Release Asset API...", ELogType.Info);
-                    var request = (HttpWebRequest)WebRequest.Create(update.ApiAssetUrl);
-                    request.UserAgent = $"WandEnhancer/{Constants.Version}";
-                    request.Accept = "application/octet-stream";
-                    if (!string.IsNullOrWhiteSpace(Constants.GitHubToken))
-                    {
-                        request.Headers["Authorization"] = $"token {Constants.GitHubToken}";
-                    }
-                    request.AllowAutoRedirect = true;
+                    long totalBytes = response.ContentLength > 0 ? response.ContentLength : update.AssetSize;
+                    byte[] buffer = new byte[16384];
+                    long receivedBytes = 0;
+                    int bytesRead;
+                    int lastReportedPercent = -1;
 
-                    using (var response = (HttpWebResponse)await request.GetResponseAsync())
-                    using (var responseStream = response.GetResponseStream())
-                    using (var fileStream = new FileStream(tempUpdateExe, FileMode.Create, FileAccess.Write, FileShare.None))
+                    while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
-                        long totalBytes = response.ContentLength > 0 ? response.ContentLength : update.AssetSize;
-                        byte[] buffer = new byte[16384];
-                        long receivedBytes = 0;
-                        int bytesRead;
-                        int lastReportedPercent = -1;
+                        await fileStream.WriteAsync(buffer, 0, bytesRead);
+                        receivedBytes += bytesRead;
 
-                        while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        if (totalBytes > 0)
                         {
-                            await fileStream.WriteAsync(buffer, 0, bytesRead);
-                            receivedBytes += bytesRead;
-
-                            if (totalBytes > 0)
+                            int percent = (int)((receivedBytes * 100) / totalBytes);
+                            if (percent != lastReportedPercent)
                             {
-                                int percent = (int)((receivedBytes * 100) / totalBytes);
-                                if (percent != lastReportedPercent)
-                                {
-                                    lastReportedPercent = percent;
-                                    progress?.Report(percent);
-                                }
+                                lastReportedPercent = percent;
+                                progress?.Report(percent);
                             }
                         }
                     }
-
-                    if (File.Exists(tempUpdateExe) && new FileInfo(tempUpdateExe).Length > 100000)
-                    {
-                        downloadSucceeded = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger?.Invoke($"[UPDATE] Direct asset API download notice: {ex.Message}. Falling back to browser URL...", ELogType.Warn);
                 }
             }
-
-            // Method 2: Fallback to BrowserDownloadUrl
-            if (!downloadSucceeded && !string.IsNullOrEmpty(update.DownloadUrl))
+            catch (Exception ex)
             {
-                try
-                {
-                    var request = (HttpWebRequest)WebRequest.Create(update.DownloadUrl);
-                    request.UserAgent = $"WandEnhancer/{Constants.Version}";
-                    request.Accept = "*/*";
-                    request.AllowAutoRedirect = true;
-
-                    using (var response = (HttpWebResponse)await request.GetResponseAsync())
-                    using (var responseStream = response.GetResponseStream())
-                    using (var fileStream = new FileStream(tempUpdateExe, FileMode.Create, FileAccess.Write, FileShare.None))
-                    {
-                        long totalBytes = response.ContentLength > 0 ? response.ContentLength : update.AssetSize;
-                        byte[] buffer = new byte[16384];
-                        long receivedBytes = 0;
-                        int bytesRead;
-                        int lastReportedPercent = -1;
-
-                        while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                        {
-                            await fileStream.WriteAsync(buffer, 0, bytesRead);
-                            receivedBytes += bytesRead;
-
-                            if (totalBytes > 0)
-                            {
-                                int percent = (int)((receivedBytes * 100) / totalBytes);
-                                if (percent != lastReportedPercent)
-                                {
-                                    lastReportedPercent = percent;
-                                    progress?.Report(percent);
-                                }
-                            }
-                        }
-                    }
-
-                    if (File.Exists(tempUpdateExe) && new FileInfo(tempUpdateExe).Length > 100000)
-                    {
-                        downloadSucceeded = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new IOException($"Update download failed: {ex.Message}", ex);
-                }
+                throw new IOException($"Update download failed: {ex.Message}", ex);
             }
 
-            if (!downloadSucceeded || !File.Exists(tempUpdateExe) || new FileInfo(tempUpdateExe).Length < 100000)
+            if (!File.Exists(tempUpdateExe) || new FileInfo(tempUpdateExe).Length < 100000)
             {
                 throw new IOException("Downloaded update file is missing or corrupted.");
             }
