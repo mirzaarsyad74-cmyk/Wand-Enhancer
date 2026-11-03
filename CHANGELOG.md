@@ -3,6 +3,18 @@
 This file is the source of truth for release notes.
 The newest entry must match the version in `WandEnhancer/Properties/AssemblyInfo.cs`.
 
+## [2.2.1.0] - 2026-11-03
+
+### Features
+
+- Added GitHub Release auto-updater matching HV tools architecture: automatically checks for newer releases on startup, prompts the update dialog, displays a red title bar badge (`⚡ New version available`), and hot-swaps the application with 1-click update.
+- Added manual "Check for Updates Now" button with immediate feedback inside the Settings menu.
+- Added single-instance enforcement on startup to terminate stale or duplicate `WandEnhancer` processes.
+
+### Improvements
+
+- Enhanced batch launcher process matching (`batch-process-match.js`) to support game launchers executed from `Downloads`, `Desktop`, or custom wrapper scripts while ignoring bypass and loader utilities.
+
 ## [2.2.0.0] - 2026-11-01
 
 ### Features
