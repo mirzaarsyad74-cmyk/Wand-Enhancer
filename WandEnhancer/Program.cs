@@ -34,6 +34,8 @@ namespace WandEnhancer
             if (TryLaunchMode(args))
                 return;
 
+            EnforceSingleInstance();
+
             bool startupFailed = StartupLog.Exists(entry => entry.Value == ELogType.Error);
 
             var application = new App();
@@ -217,6 +219,22 @@ namespace WandEnhancer
         {
             e.SetObserved();
             RecordStartupLog($"Background task failed: {e.Exception.GetBaseException().Message}", ELogType.Error);
+        }
+
+        private static void EnforceSingleInstance()
+        {
+            try
+            {
+                int currentPid = Process.GetCurrentProcess().Id;
+                foreach (var p in Process.GetProcessesByName("WandEnhancer"))
+                {
+                    if (p.Id != currentPid)
+                    {
+                        try { p.Kill(); } catch { }
+                    }
+                }
+            }
+            catch { }
         }
 
         private static void OnUnhandledException(object sender, UnhandledExceptionEventArgs e)

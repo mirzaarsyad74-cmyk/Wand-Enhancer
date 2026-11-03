@@ -343,7 +343,7 @@ namespace WandEnhancer.View.MainWindow
             LauncherLog.Write(message, logType);
         }
 
-        private void Log(string message, ELogType logType)
+        internal void Log(string message, ELogType logType)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -705,6 +705,7 @@ namespace WandEnhancer.View.MainWindow
 
 #if ENABLE_UPDATE_NOTIFICATIONS
             ShowUpdateCommand = new RelayCommand(OnShowUpdate);
+            CheckUpdatesCommand = new RelayCommand(OnCheckUpdates);
             UpdateNotifier.CheckInBackground(OnUpdateFound, OnNotificationClick);
 #endif
         }
@@ -741,6 +742,21 @@ namespace WandEnhancer.View.MainWindow
                 OpenUpdatePopup(_availableUpdate);
         }
 
+        public RelayCommand CheckUpdatesCommand { get; }
+
+        private async void OnCheckUpdates(object param)
+        {
+            var update = await UpdateNotifier.CheckForUpdatesAsync(Log, silent: false);
+            if (update != null && update.IsNewer)
+            {
+                _availableUpdate = update;
+                IsUpdateAvailable = true;
+                VersionDisplay = $"v{Constants.Version} → v{update.Version}";
+                NewVersionBadgeText = $"v{update.Version}";
+                OpenUpdatePopup(update);
+            }
+        }
+
         private void OnUpdateFound(UpdateNotifier.UpdateRelease update)
         {
             Application.Current.Dispatcher.Invoke(() =>
@@ -750,6 +766,7 @@ namespace WandEnhancer.View.MainWindow
                 VersionDisplay = $"v{Constants.Version} → v{update.Version}";
                 NewVersionBadgeText = $"v{update.Version}";
                 Log($"[UPDATE] New version v{update.Version} is available! Click the badge in the title bar to update.", ELogType.Info);
+                OpenUpdatePopup(update);
             });
         }
 
@@ -769,7 +786,7 @@ namespace WandEnhancer.View.MainWindow
             });
         }
 
-        private void OpenUpdatePopup(UpdateNotifier.UpdateRelease update)
+        internal void OpenUpdatePopup(UpdateNotifier.UpdateRelease update)
         {
             _shell.OpenPopup(
                 new UpdatePopup(Constants.Version.ToString(), update.Version, update.Notes,

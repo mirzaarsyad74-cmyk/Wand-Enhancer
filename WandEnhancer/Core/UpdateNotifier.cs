@@ -26,10 +26,12 @@ namespace WandEnhancer.Core
 
         public sealed class UpdateRelease
         {
+            public bool IsNewer { get; set; }
             public string Version { get; set; }
             public string Notes { get; set; }
             public string Url { get; set; }
             public string DownloadUrl { get; set; }
+            public string ApiAssetUrl { get; set; }
             public string AssetName { get; set; }
             public long AssetSize { get; set; }
         }
@@ -55,6 +57,9 @@ namespace WandEnhancer.Core
 
             [JsonProperty("browser_download_url")]
             public string BrowserDownloadUrl { get; set; }
+
+            [JsonProperty("url")]
+            public string Url { get; set; }
         }
 
         /// <summary>
@@ -67,6 +72,80 @@ namespace WandEnhancer.Core
             Action<UpdateRelease> onNotificationClick = null)
         {
             Task.Run(() => CheckAsync(onUpdateFound, onNotificationClick));
+        }
+
+        public static async Task<UpdateRelease> CheckForUpdatesAsync(
+            Action<string, ELogType> logger = null,
+            bool silent = false)
+        {
+            try
+            {
+                if (!silent)
+                {
+                    logger?.Invoke("[UPDATE] Checking GitHub repository for latest release...", ELogType.Info);
+                }
+
+                var settings = SettingsManager.LoadSettings();
+                GitHubRelease release = await GetNewestReleaseAsync(settings?.CheckPrereleases == true);
+                if (release == null)
+                {
+                    if (!silent)
+                    {
+                        logger?.Invoke("[UPDATE] Unable to reach GitHub releases API.", ELogType.Warn);
+                    }
+                    return null;
+                }
+
+                string testTag = Environment.GetEnvironmentVariable(TestUpdateEnvVar);
+                if (!string.IsNullOrWhiteSpace(testTag))
+                    release.TagName = testTag;
+
+                bool isNewer = IsNewerVersion(release.TagName);
+                var update = new UpdateRelease
+                {
+                    IsNewer = isNewer,
+                    Version = release.TagName.Trim().TrimStart('v', 'V'),
+                    Notes = release.Body,
+                    Url = Constants.RepositoryUrl + "/releases/tag/" + Uri.EscapeDataString(release.TagName)
+                };
+
+                var exeAsset = release.Assets?.FirstOrDefault(a =>
+                    !string.IsNullOrEmpty(a.Name) &&
+                    a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
+
+                if (exeAsset != null)
+                {
+                    update.DownloadUrl = exeAsset.BrowserDownloadUrl;
+                    update.ApiAssetUrl = exeAsset.Url;
+                    update.AssetName = exeAsset.Name;
+                    update.AssetSize = exeAsset.Size;
+                }
+                else
+                {
+                    update.DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{release.TagName}/WandEnhancer.exe";
+                    update.AssetName = "WandEnhancer.exe";
+                }
+
+                if (isNewer)
+                {
+                    logger?.Invoke($"[UPDATE] New version available: v{update.Version} (current: v{Constants.Version})", ELogType.Info);
+                }
+                else if (!silent)
+                {
+                    logger?.Invoke($"[INFO] You are running the latest version (v{Constants.Version}).", ELogType.Success);
+                }
+
+                return update;
+            }
+            catch (Exception ex)
+            {
+                if (!silent)
+                {
+                    logger?.Invoke($"[UPDATE] Update check notice: {ex.Message}", ELogType.Warn);
+                }
+                LauncherLog.Write($"Update check notice: {ex.Message}", ELogType.Warn);
+                return null;
+            }
         }
 
         public static async Task<string> GetFullChangelogAsync()
@@ -130,39 +209,9 @@ namespace WandEnhancer.Core
                     return;
                 }
 
-                GitHubRelease release = await GetNewestReleaseAsync(settings?.CheckPrereleases == true);
-                if (release == null)
+                var update = await CheckForUpdatesAsync(null, silent: true);
+                if (update == null || !update.IsNewer)
                     return;
-
-                string testTag = Environment.GetEnvironmentVariable(TestUpdateEnvVar);
-                if (!string.IsNullOrWhiteSpace(testTag))
-                    release.TagName = testTag;
-
-                if (!IsNewerVersion(release.TagName))
-                    return;
-
-                var update = new UpdateRelease
-                {
-                    Version = release.TagName.Trim().TrimStart('v', 'V'),
-                    Notes = release.Body,
-                    Url = Constants.RepositoryUrl + "/releases/tag/" + Uri.EscapeDataString(release.TagName)
-                };
-
-                var exeAsset = release.Assets?.FirstOrDefault(a =>
-                    !string.IsNullOrEmpty(a.Name) &&
-                    a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase));
-
-                if (exeAsset != null)
-                {
-                    update.DownloadUrl = exeAsset.BrowserDownloadUrl;
-                    update.AssetName = exeAsset.Name;
-                    update.AssetSize = exeAsset.Size;
-                }
-                else
-                {
-                    update.DownloadUrl = $"{Constants.RepositoryUrl}/releases/download/{release.TagName}/WandEnhancer.exe";
-                    update.AssetName = "WandEnhancer.exe";
-                }
 
                 LauncherLog.Write($"WandEnhancer {update.Version} is available: {update.Url}", ELogType.Info);
                 onUpdateFound?.Invoke(update);
@@ -198,6 +247,10 @@ namespace WandEnhancer.Core
             var request = (HttpWebRequest)WebRequest.Create(url);
             request.Accept = "application/vnd.github+json";
             request.UserAgent = $"WandEnhancer/{Constants.Version}";
+            if (!string.IsNullOrWhiteSpace(Constants.GitHubToken))
+            {
+                request.Headers["Authorization"] = $"token {Constants.GitHubToken}";
+            }
             return request;
         }
 
@@ -310,42 +363,127 @@ namespace WandEnhancer.Core
             IProgress<int> progress = null,
             Action<string, ELogType> logger = null)
         {
-            if (update == null || string.IsNullOrEmpty(update.DownloadUrl))
+            if (update == null || (string.IsNullOrEmpty(update.DownloadUrl) && string.IsNullOrEmpty(update.ApiAssetUrl)))
             {
                 throw new ArgumentException("Invalid update release metadata or download URL.");
             }
 
             string tempUpdateExe = Path.Combine(Path.GetTempPath(), $"WandEnhancer-Update-{Guid.NewGuid():N}.exe");
-            logger?.Invoke($"[GITHUB-UPDATE] Downloading WandEnhancer v{update.Version} from GitHub...", ELogType.Info);
+            logger?.Invoke($"[UPDATE] Downloading WandEnhancer v{update.Version} from GitHub release...", ELogType.Info);
 
-            using (var client = new WebClient())
+            bool downloadSucceeded = false;
+
+            // Method 1: Try GitHub Release Asset API endpoint (with token authorization & octet-stream accept)
+            if (!string.IsNullOrEmpty(update.ApiAssetUrl))
             {
-                client.Headers.Add("User-Agent", $"WandEnhancer/{Constants.Version}");
-                client.Headers.Add("Accept", "application/octet-stream");
-                
-                int lastPercent = -1;
-                client.DownloadProgressChanged += (s, e) =>
+                try
                 {
-                    progress?.Report(e.ProgressPercentage);
-                    if (e.ProgressPercentage % 25 == 0 && e.ProgressPercentage != lastPercent)
+                    logger?.Invoke("[UPDATE] Connecting to GitHub Release Asset API...", ELogType.Info);
+                    var request = (HttpWebRequest)WebRequest.Create(update.ApiAssetUrl);
+                    request.UserAgent = $"WandEnhancer/{Constants.Version}";
+                    request.Accept = "application/octet-stream";
+                    if (!string.IsNullOrWhiteSpace(Constants.GitHubToken))
                     {
-                        lastPercent = e.ProgressPercentage;
-                        logger?.Invoke($"[GITHUB-UPDATE] Downloading update: {e.ProgressPercentage}%", ELogType.Info);
+                        request.Headers["Authorization"] = $"token {Constants.GitHubToken}";
                     }
-                };
+                    request.AllowAutoRedirect = true;
 
-                await client.DownloadFileTaskAsync(new Uri(update.DownloadUrl), tempUpdateExe);
+                    using (var response = (HttpWebResponse)await request.GetResponseAsync())
+                    using (var responseStream = response.GetResponseStream())
+                    using (var fileStream = new FileStream(tempUpdateExe, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        long totalBytes = response.ContentLength > 0 ? response.ContentLength : update.AssetSize;
+                        byte[] buffer = new byte[16384];
+                        long receivedBytes = 0;
+                        int bytesRead;
+                        int lastReportedPercent = -1;
+
+                        while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            receivedBytes += bytesRead;
+
+                            if (totalBytes > 0)
+                            {
+                                int percent = (int)((receivedBytes * 100) / totalBytes);
+                                if (percent != lastReportedPercent)
+                                {
+                                    lastReportedPercent = percent;
+                                    progress?.Report(percent);
+                                }
+                            }
+                        }
+                    }
+
+                    if (File.Exists(tempUpdateExe) && new FileInfo(tempUpdateExe).Length > 100000)
+                    {
+                        downloadSucceeded = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger?.Invoke($"[UPDATE] Direct asset API download notice: {ex.Message}. Falling back to browser URL...", ELogType.Warn);
+                }
             }
 
-            if (!File.Exists(tempUpdateExe) || new FileInfo(tempUpdateExe).Length < 10000)
+            // Method 2: Fallback to BrowserDownloadUrl
+            if (!downloadSucceeded && !string.IsNullOrEmpty(update.DownloadUrl))
+            {
+                try
+                {
+                    var request = (HttpWebRequest)WebRequest.Create(update.DownloadUrl);
+                    request.UserAgent = $"WandEnhancer/{Constants.Version}";
+                    request.Accept = "*/*";
+                    request.AllowAutoRedirect = true;
+
+                    using (var response = (HttpWebResponse)await request.GetResponseAsync())
+                    using (var responseStream = response.GetResponseStream())
+                    using (var fileStream = new FileStream(tempUpdateExe, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        long totalBytes = response.ContentLength > 0 ? response.ContentLength : update.AssetSize;
+                        byte[] buffer = new byte[16384];
+                        long receivedBytes = 0;
+                        int bytesRead;
+                        int lastReportedPercent = -1;
+
+                        while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                        {
+                            await fileStream.WriteAsync(buffer, 0, bytesRead);
+                            receivedBytes += bytesRead;
+
+                            if (totalBytes > 0)
+                            {
+                                int percent = (int)((receivedBytes * 100) / totalBytes);
+                                if (percent != lastReportedPercent)
+                                {
+                                    lastReportedPercent = percent;
+                                    progress?.Report(percent);
+                                }
+                            }
+                        }
+                    }
+
+                    if (File.Exists(tempUpdateExe) && new FileInfo(tempUpdateExe).Length > 100000)
+                    {
+                        downloadSucceeded = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new IOException($"Update download failed: {ex.Message}", ex);
+                }
+            }
+
+            if (!downloadSucceeded || !File.Exists(tempUpdateExe) || new FileInfo(tempUpdateExe).Length < 100000)
             {
                 throw new IOException("Downloaded update file is missing or corrupted.");
             }
 
-            logger?.Invoke("[GITHUB-UPDATE] Update download complete! Applying update and restarting...", ELogType.Success);
+            progress?.Report(100);
+            logger?.Invoke("[UPDATE] Update download complete! Applying update and restarting...", ELogType.Success);
 
-            string currentExe = Assembly.GetExecutingAssembly().Location;
-            string updaterScript = Path.Combine(Path.GetTempPath(), $"wand-update-{Guid.NewGuid():N}.cmd");
+            string currentExe = Process.GetCurrentProcess().MainModule?.FileName ?? Assembly.GetExecutingAssembly().Location;
+            string updaterScript = Path.Combine(Path.GetTempPath(), $"wand_self_update_{Guid.NewGuid():N}.cmd");
 
             string scriptContent = $@"@echo off
 set /a retries=0
@@ -354,7 +492,7 @@ timeout /t 1 /nobreak > nul
 set /a retries+=1
 copy /y ""{tempUpdateExe}"" ""{currentExe}"" > nul
 if errorlevel 1 (
-    if %retries% lss 20 goto retry
+    if %retries% lss 30 goto retry
     del ""{tempUpdateExe}"" > nul 2>&1
     del ""%~f0"" > nul 2>&1
     exit /b 1
@@ -378,6 +516,8 @@ del ""%~f0"" > nul 2>&1
             {
                 System.Windows.Application.Current.Shutdown();
             });
+
+            Environment.Exit(0);
         }
     }
 }

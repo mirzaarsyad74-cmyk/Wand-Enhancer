@@ -62,7 +62,7 @@
                            Text="{DynamicResource settings_check_updates}" />
                 <CheckBox Grid.Column="1" x:Name="UpdateCheckCheckBox" VerticalAlignment="Center" />
             </Grid>
-            <Grid>
+            <Grid Margin="0 0 0 10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -72,6 +72,9 @@
                            Text="{DynamicResource settings_check_prereleases}" />
                 <CheckBox Grid.Column="1" x:Name="CheckPrereleasesCheckBox" VerticalAlignment="Center" />
             </Grid>
+            <Button x:Name="CheckUpdatesNowButton" Padding="0 5 0 5"
+                    Content="Check for Updates Now"
+                    Click="OnCheckUpdatesNowClick" />
         </StackPanel>
 
         <Button Grid.Row="3" Padding="0 5 0 5" Margin="0 5 0 0"

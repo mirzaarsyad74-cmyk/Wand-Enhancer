@@ -83,6 +83,36 @@ namespace WandEnhancer.View.Popups
             MainWindow.MainWindow.Instance?.ClosePopup();
         }
 
+#if ENABLE_UPDATE_NOTIFICATIONS
+        private async void OnCheckUpdatesNowClick(object sender, RoutedEventArgs e)
+        {
+            CheckUpdatesNowButton.IsEnabled = false;
+            CheckUpdatesNowButton.Content = "Checking...";
+            try
+            {
+                var update = await UpdateNotifier.CheckForUpdatesAsync((msg, type) =>
+                {
+                    MainWindow.MainWindow.Instance?.ViewModel?.Log(msg, type);
+                }, silent: false);
+
+                if (update != null && update.IsNewer)
+                {
+                    MainWindow.MainWindow.Instance?.ClosePopup();
+                    MainWindow.MainWindow.Instance?.ViewModel?.OpenUpdatePopup(update);
+                }
+            }
+            finally
+            {
+                CheckUpdatesNowButton.IsEnabled = true;
+                CheckUpdatesNowButton.Content = "Check for Updates Now";
+            }
+        }
+#else
+        private void OnCheckUpdatesNowClick(object sender, RoutedEventArgs e)
+        {
+        }
+#endif
+
         private class LanguageItem
         {
             public CultureInfo Culture { get; set; }
